@@ -1,5 +1,5 @@
 from cli.cli import run
-
+from sys     import argv
 
 if __name__ == '__main__':
-    run()
+    run(argv[1:])

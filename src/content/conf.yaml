@@ -7,35 +7,12 @@ depend:
 
 usage: >
   Neu - script language implemented in Python v3.11.
-  
+
 
   Usage:
-    neu                        | Run neu interpreter in cli-mode
-    neu <file_name>.neu        | Execute .neu-file by neu interpreter
-
-   #neu project                | Create .neu-project
-   #neu configure              | Configure initialized .neu-project
-   #neu build                  | Build .neu-project
-   #neu source <file_name>.py  | Use Python-file as source library
-
+    neu
+    neu <file_name>
+    
   Options:
-    -h --help     | Show help screen
-    -v --version  | Show version of Neu interpreter
-    -m --mode     | Set execution mode
-
-help: >
-  Neu - script language implemented in Python v3.11.
-
-  Usage:
-    neu                        | Run neu interpreter in cli-mode
-    neu <file_name>.neu        | Execute .neu-file by neu interpreter
-
-   #neu project                | Create .neu-project
-   #neu configure              | Configure initialized .neu-project
-   #neu build                  | Build .neu-project
-   #neu source <file_name>.py  | Use Python-file as source library
-
-  Options:
-    -h --help     | Show help screen
-    -v --version  | Show version of Neu interpreter
-    -m --mode     | Set execution mode
+    -h --help      Show help screen
+    -v --version   Show version of Neu interpreter
