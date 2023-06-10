@@ -1,0 +1,14 @@
+information:
+  name: Neu
+  ver:  v0.1 (nightly)
+
+depend:
+  - docopt
+
+usage: >
+  Neu - script language implemented in PyPy3.9.
+
+  Arguments:
+    neu                 - run neu interpreter in cli-mode
+    neu --version/-v    - prints version of interpreter
+    neu <file_name>.neu - execute .neu-file by neu interpreter
