@@ -22,4 +22,4 @@ def execute(filename: str, content: str) -> tuple[list[str], str]:
     interpreter = Interpreter()
     result = interpreter.visit(ast.node)
 
-    return result, None
+    return result.value, result.error

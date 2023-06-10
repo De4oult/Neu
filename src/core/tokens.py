@@ -20,8 +20,7 @@ class Token:
             self.position_end   = start.copy()
             self.position_end.next()
 
-        if end:
-            self.position_end = end.copy()
+        if end: self.position_end = end
 
     def __repr__(self) -> str:
         if self.value: return f'{self.type}: {self.value}'

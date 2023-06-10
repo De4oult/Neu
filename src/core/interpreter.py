@@ -1,5 +1,6 @@
-from core.tokens import TokenTypes
-from core.types  import Number
+from core.observer import RuntimeResult
+from core.tokens   import TokenTypes
+from core.types    import Number
 
 class Interpreter:
     def visit(self, node):
@@ -15,28 +16,44 @@ class Interpreter:
         raise Exception(f'visit_{type(node).__name__} method is not defined')
     
     def visit_NumberNode(self, node):
-        return Number(node.token.value).set_position(node.position_start, node.position_end)
+        return RuntimeResult().success(Number(node.token.value).set_position(node.position_start, node.position_end))
 
     def visit_BinaryOperationNode(self, node):
-        left  = self.visit(node.left)
-        right = self.visit(node.right)
+        observer = RuntimeResult()
 
-        if   node.operation.type == TokenTypes.get('PLUS'):  result = left.addition(right)
-        elif node.operation.type == TokenTypes.get('MINUS'): result = left.subtraction(right)
-        elif node.operation.type == TokenTypes.get('STAR'):  result = left.multiplication(right)
-        elif node.operation.type == TokenTypes.get('SLASH'): result = left.division(right)
+        left  = observer.register(self.visit(node.left))
+        if observer.error: return observer
 
-        return result.set_position(
-            node.position_start, 
-            node.position_end
+        right = observer.register(self.visit(node.right))
+        if observer.error: return observer
+
+        if   node.operation.type == TokenTypes.get('PLUS'):  result, error = left.addition(right)
+        elif node.operation.type == TokenTypes.get('MINUS'): result, error = left.subtraction(right)
+        elif node.operation.type == TokenTypes.get('STAR'):  result, error = left.multiplication(right)
+        elif node.operation.type == TokenTypes.get('SLASH'): result, error = left.division(right)
+
+        if error: return observer.failure(error)
+            
+        return observer.success(result.set_position(
+                node.position_start, 
+                node.position_end
+            )
         )
 
     def visit_UnaryOperationNode(self, node):
-        number = self.visit(node.node)
+        observer = RuntimeResult()
 
-        if node.operation.type == TokenTypes.get('MINUS'): number = number.multiplication(Number(-1))
+        number = observer.register(self.visit(node.node))
+        if observer.error: return observer
 
-        return number.set_position(
-            node.position_start, 
-            node.position_end
+        error = None
+
+        if node.operation.type == TokenTypes.get('MINUS'): number, error = number.multiplication(Number(-1))
+
+        if error: return observer.failure(error)
+        
+        return observer.success(number.set_position(
+                node.position_start, 
+                node.position_end
+            )
         )
