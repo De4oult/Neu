@@ -1,7 +1,7 @@
 from docopt import docopt
 from yaml   import safe_load
 
-with open('./src/content/conf.yaml') as conf:
+with open('./src/content/conf.yaml') as conf: # change to global path later
     usage: dict[str, any] = safe_load(conf)
 
 def run(args: list[str]) -> None:
