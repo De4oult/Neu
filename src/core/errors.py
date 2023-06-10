@@ -41,3 +41,7 @@ class Error:
 class UndefinedToken(Error):
     def __init__(self, start: int, end: int, info: str) -> None:
         super().__init__(start, end, 'Undefined Token', info)
+
+class InvalidSyntax(Error):
+    def __init__(self, start: int, end: int, info: str) -> None:
+        super().__init__(start, end, 'Invalid Syntax', info)

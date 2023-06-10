@@ -1,7 +1,19 @@
-from core.lexer import Lexer
+from core.parser import Parser
+from core.lexer  import Lexer
 
 def execute(filename: str, content: str) -> tuple[list[str], str]:
-    lexer   = Lexer(filename, content)
-    tk, err = lexer.tokenize()
+    # Tokenizing
+    lexer = Lexer(filename, content)
+    
+    (
+        tokens, 
+        error
+    ) = lexer.tokenize()
+    
+    if error: return None, error
 
-    return tk, err
+    # AST Generation
+    parser = Parser(tokens)
+    ast    = parser.parse()
+
+    return ast, None
