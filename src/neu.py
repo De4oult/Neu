@@ -1,8 +1,5 @@
-from docopt import docopt
-from yaml   import safe_load
+from cli.cli import run
 
-with open('./content/conf.yaml') as conf:
-    usage = safe_load(conf)
 
-args = docopt(usage)
-print(args)
+if __name__ == '__main__':
+    run()
