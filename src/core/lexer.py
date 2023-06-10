@@ -1,18 +1,20 @@
-from core.errors    import UndefinedToken
+from core.errors    import Position, UndefinedToken
 from core.constants import NUMBERS
 from core.tokens    import Token
 
 
 class Lexer:
-    def __init__(self, text: str) -> None:
-        self.text = text # input script
-        self.pos  = -1   # text position
-        self.char = None # current char
+    def __init__(self, filename: str, text: str) -> None:
+        self.filename = filename
+        self.text     = text                                 # input script
+        self.pos      = Position(-1, 0, -1, filename, text) # cursor position
+        self.char     = None                                 # current char
+        
         self.next()
 
     def next(self):
-        self.pos += 1
-        self.char = self.text[self.pos] if self.pos < len(self.text) else None
+        self.pos.next(self.char)
+        self.char = self.text[self.pos.index] if self.pos.index < len(self.text) else None
 
     def tokenize(self):
         tokens: list[str] = []
@@ -24,9 +26,10 @@ class Lexer:
             elif self.char in ' \t':
                 self.next()
 
-                #######################
-                #   PARSE OPERATORS   #
-                #######################
+
+            #######################
+            #   PARSE OPERATORS   #
+            #######################
 
             elif self.char == '+':
                 tokens.append(Token('PLUS'))
@@ -53,9 +56,16 @@ class Lexer:
                 self.next()
             
             else:
-                char = self.char
+                position_start = self.pos.copy()
+                char           = self.char
+
                 self.next()
-                return [], UndefinedToken(f'`{char}`') # throw error: undefined token
+
+                return [], UndefinedToken(
+                    position_start,
+                    self.pos,
+                    f'`{char}`'
+                ) # throw error: undefined token
 
         return tokens, None
     
