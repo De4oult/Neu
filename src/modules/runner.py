@@ -16,4 +16,4 @@ def execute(filename: str, content: str) -> tuple[list[str], str]:
     parser = Parser(tokens)
     ast    = parser.parse()
 
-    return ast, None
+    return ast.node, ast.error

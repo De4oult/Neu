@@ -1,5 +1,7 @@
-from core.tokens import TokenTypes
-from core.nodes  import *
+from core.errors   import InvalidSyntax
+from core.tokens   import TokenTypes
+from core.observer import Result
+from core.nodes    import *
 
 class Parser:
     def __init__(self, tokens: list) -> None:
@@ -16,19 +18,41 @@ class Parser:
         return self.token
     
     def parse(self):
-        return self.expression()
+        observer = self.expression()
+
+        if not observer.error and self.token.type != TokenTypes.get('EOF'):
+            return observer.failure(
+                InvalidSyntax(
+                    self.token.position_start,
+                    self.token.position_end,
+                    'operation expected (`+`, `-`, `*` or `/`)'
+                )
+            )
+
+        return observer
         
     ### TOKENS VALIDATORS
 
     def factor(self):
+        observer = Result()
+
         token = self.token
 
         if token.type in (
             TokenTypes.get('INT'),
             TokenTypes.get('FLOAT')
         ):
-            self.next()
-            return NumberNode(token)
+            observer.register(self.next())
+
+            return observer.success(NumberNode(token))
+
+        return observer.failure(
+            InvalidSyntax(
+                token.position_start,
+                token.position_end,
+                'integer or float expected'
+            )
+        )
 
     def term(self):
         return self.binary_operation(self.factor, (
@@ -47,35 +71,19 @@ class Parser:
     ### OPERATIONS
 
     def binary_operation(self, function, operators: tuple[str]):
-        left = function()
+        observer = Result()
+
+        left = observer.register(function())
+        if observer.error: return observer
 
         while self.token.type in operators:
             operator_token = self.token
 
-            self.next()
+            observer.register(self.next())
             
-            right = function()
-            left  = BinaryOperationNode(left, operator_token, right) # change var name
+            right = observer.register(function())
+            if observer.error: return observer
+            
+            left  = BinaryOperationNode(left, operator_token, right)
     
-        return left # change
-
-
-class Result:
-    def __init__(self) -> None:
-        self.error = None
-        self.node  = None
-
-    def register(self, res):
-        if isinstance(res, Result):
-            if res.error: self.error = res.error
-            return res.node
-
-        return res
-
-    def success(self, node):
-        self.node = node
-        return self
-
-    def failure(self, error):
-        self.error = error
-        return self
+        return observer.success(left)

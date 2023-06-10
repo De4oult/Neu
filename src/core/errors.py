@@ -8,7 +8,7 @@ class Position:
         self.filename  = filename
         self.file_text = file_text
 
-    def next(self, char: int):
+    def next(self, char: int = None):
         self.index  += 1
         self.column += 1
 

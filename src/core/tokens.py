@@ -6,7 +6,8 @@ TokenTypes = {
     'STAR'   : 'Multiply',
     'SLASH'  : 'Divide',
     'LPAREN' : 'LParen',
-    'RPAREN' : 'RParen'
+    'RPAREN' : 'RParen',
+    'EOF'    : 'EndOfFile',
 }
 
 class Token:
@@ -16,7 +17,7 @@ class Token:
 
         if start:
             self.position_start = start.copy()
-            self.position_end   = start.copy
+            self.position_end   = start.copy()
             self.position_end.next()
 
         if end:

@@ -6,9 +6,9 @@ from core.tokens    import Token
 class Lexer:
     def __init__(self, filename: str, text: str) -> None:
         self.filename = filename
-        self.text     = text                                 # input script
+        self.text     = text                                # input script
         self.pos      = Position(-1, 0, -1, filename, text) # cursor position
-        self.char     = None                                 # current char
+        self.char     = None                                # current char
         
         self.next()
 
@@ -32,27 +32,27 @@ class Lexer:
             #######################
 
             elif self.char == '+':
-                tokens.append(Token('PLUS'))
+                tokens.append(Token('PLUS', start = self.pos))
                 self.next()
             
             elif self.char == '-':
-                tokens.append(Token('MINUS'))
+                tokens.append(Token('MINUS', start = self.pos))
                 self.next()
             
             elif self.char == '*':
-                tokens.append(Token('STAR'))
+                tokens.append(Token('STAR', start = self.pos))
                 self.next()
             
             elif self.char == '/':
-                tokens.append(Token('SLASH'))
+                tokens.append(Token('SLASH', start = self.pos))
                 self.next()
             
             elif self.char == '(':
-                tokens.append(Token('LPAREN'))
+                tokens.append(Token('LPAREN', start = self.pos))
                 self.next()
             
             elif self.char == ')':
-                tokens.append(Token('RPAREN'))
+                tokens.append(Token('RPAREN', start = self.pos))
                 self.next()
             
             else:
@@ -67,11 +67,13 @@ class Lexer:
                     f'`{char}`'
                 ) # throw error: undefined token
 
+        tokens.append(Token('EOF', start = self.pos))
         return tokens, None
     
     def make_number(self) -> str: # function that convert tokens character into integer or float 
         number: str = ''
         dots  : int = 0
+        start       = self.pos.copy()
 
         while (
             (self.char != None) and
@@ -89,9 +91,9 @@ class Lexer:
             self.next()
 
         if dots == 0:
-            return Token('INT', int(number))
+            return Token('INT', int(number), start, self.pos)
         
-        return Token('FLOAT', float(number))
+        return Token('FLOAT', float(number), start, self.pos)
     
 
     ################
