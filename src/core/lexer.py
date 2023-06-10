@@ -1,3 +1,4 @@
+from core.errors    import UndefinedToken
 from core.constants import NUMBERS
 from core.tokens    import Token
 
@@ -52,10 +53,11 @@ class Lexer:
                 self.next()
             
             else:
-                print('err')
-                return # throw error: undefined token
+                char = self.char
+                self.next()
+                return [], UndefinedToken(f'`{char}`') # throw error: undefined token
 
-        return tokens
+        return tokens, None
     
     def make_number(self) -> str: # function that convert tokens character into integer or float 
         number: str = ''

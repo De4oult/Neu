@@ -1,7 +1,7 @@
 from core.lexer import Lexer
 
-def execute(command: str) -> None:
-    lexer  = Lexer(command)
-    tokens = lexer.tokenize()
+def execute(command: str) -> tuple[list[str], str]:
+    lexer   = Lexer(command)
+    tk, err = lexer.tokenize()
 
-    return tokens
+    return tk, err
