@@ -39,12 +39,45 @@ class Parser:
         token = self.token
 
         if token.type in (
+            TokenTypes.get('PLUS'),
+            TokenTypes.get('MINUS')
+        ):
+            observer.register(self.next())
+
+            factor = observer.register(self.factor())
+            
+            if observer.error: return observer
+
+            return observer.success(UnaryOperationNode(token, factor))
+
+        elif token.type in (
             TokenTypes.get('INT'),
             TokenTypes.get('FLOAT')
         ):
             observer.register(self.next())
 
             return observer.success(NumberNode(token))
+
+        elif token.type == TokenTypes.get('LPAREN'):
+            observer.register(self.next())
+
+            expression = observer.register(self.expression())
+
+            if observer.error: return observer
+            
+            if self.token.type == TokenTypes.get('RPAREN'):
+                observer.register(self.next())
+                
+                return observer.success(expression)
+            
+            else:
+                return observer.failure(
+                    InvalidSyntax(
+                        self.token.position_start,
+                        self.token.position_end,
+                        '`)` expected'
+                    )
+                )
 
         return observer.failure(
             InvalidSyntax(

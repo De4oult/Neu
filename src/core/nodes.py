@@ -16,3 +16,11 @@ class BinaryOperationNode:
 
     def __repr__(self) -> str:
         return f'({self.left}, {self.operation}, {self.right})'
+    
+class UnaryOperationNode:
+    def __init__(self, operation, node) -> None:
+        self.operation = operation
+        self.node      = node
+
+    def __repr__(self) -> str:
+        return f'({self.operation}, {self.node})'
