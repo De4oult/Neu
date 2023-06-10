@@ -1,3 +1,6 @@
+from modules.translator import translate
+from interface.editor   import editor
+
 from docopt import docopt
 from yaml   import safe_load
 
@@ -17,4 +20,4 @@ def run(args: list[str]) -> None:
         pass # execute Neu-file
 
     else:
-        pass # open Neu-interpreter
+        editor()

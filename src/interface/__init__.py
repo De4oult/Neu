@@ -1,1 +1,2 @@
-from .cli import run
+from .editor import editor
+from .cli    import run

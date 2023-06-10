@@ -1,0 +1,5 @@
+
+
+
+def translate() -> None:
+    pass

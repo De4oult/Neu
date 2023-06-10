@@ -10,10 +10,10 @@ TokenTypes = {
 }
 
 class Token:
-    def __init__(self, type: str, value: any) -> None:
+    def __init__(self, type: str, value: any = None) -> None:
         self.type  = TokenTypes.get(type)
         self.value = value
 
     def __repr__(self) -> str:
         if self.value: return f'{self.type}: {self.value}'
-        return f'{self.value}'
+        return f'{self.type}'

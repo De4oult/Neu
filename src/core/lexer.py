@@ -1,5 +1,5 @@
-from modules.constants import NUMBERS
-from modules.tokens    import Token
+from core.constants import NUMBERS
+from core.tokens    import Token
 
 
 class Lexer:
@@ -17,40 +17,44 @@ class Lexer:
         tokens: list[str] = []
 
         while self.char != None:
-            match self.char:
-                case ' \t':
-                    self.next()
+            if self.is_number():
+                tokens.append(self.make_number())
+
+            elif self.char in ' \t':
+                self.next()
 
                 #######################
                 #   PARSE OPERATORS   #
                 #######################
-                case '+':
-                    tokens.append(Token('PLUS'))
-                    self.next()
-                
-                case '-':
-                    tokens.append(Token('MINUS'))
-                    self.next()
-                
-                case '*':
-                    tokens.append(Token('STAR'))
-                    self.next()
-                
-                case '/':
-                    tokens.append(Token('SLASH'))
-                    self.next()
-                
-                case '(':
-                    tokens.append(Token('LPAREN'))
-                    self.next()
-                
-                case ')':
-                    tokens.append(Token('RPAREN'))
-                    self.next()
 
-                case _:
-                    pass # throw error: undefined token
-    
+            elif self.char == '+':
+                tokens.append(Token('PLUS'))
+                self.next()
+            
+            elif self.char == '-':
+                tokens.append(Token('MINUS'))
+                self.next()
+            
+            elif self.char == '*':
+                tokens.append(Token('STAR'))
+                self.next()
+            
+            elif self.char == '/':
+                tokens.append(Token('SLASH'))
+                self.next()
+            
+            elif self.char == '(':
+                tokens.append(Token('LPAREN'))
+                self.next()
+            
+            elif self.char == ')':
+                tokens.append(Token('RPAREN'))
+                self.next()
+            
+            else:
+                print('err')
+                return # throw error: undefined token
+
         return tokens
     
     def make_number(self) -> str: # function that convert tokens character into integer or float 
@@ -65,9 +69,12 @@ class Lexer:
                 if dots == 1: break # throw error: invalid number
                 dots   += 1
                 number += '.'
+
+                self.next()
                 continue
 
             number += self.char
+            self.next()
 
         if dots == 0:
             return Token('INT', int(number))
@@ -79,4 +86,4 @@ class Lexer:
     #   BOOLEANS   #
     ################
     def is_number(self) -> bool: # check if token is integer or float
-        return self.make_number() in NUMBERS
+        return self.char in NUMBERS
