@@ -1,4 +1,5 @@
 from core.interpreter import Interpreter
+from core.context     import Context
 from core.parser      import Parser
 from core.lexer       import Lexer
 
@@ -20,6 +21,7 @@ def execute(filename: str, content: str) -> tuple[list[str], str]:
     if ast.error: return None, ast.error
 
     interpreter = Interpreter()
-    result = interpreter.visit(ast.node)
+    context = Context('<program>') 
+    result  = interpreter.visit(ast.node, context)
 
     return result.value, result.error

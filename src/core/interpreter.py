@@ -3,28 +3,28 @@ from core.tokens   import TokenTypes
 from core.types    import Number
 
 class Interpreter:
-    def visit(self, node):
+    def visit(self, node, context):
         method = getattr(
             self, 
             f'visit_{type(node).__name__}', 
             self.no_visit
         )
        
-        return method(node)
+        return method(node, context)
     
     def no_visit(self, node):
         raise Exception(f'visit_{type(node).__name__} method is not defined')
     
-    def visit_NumberNode(self, node):
-        return RuntimeResult().success(Number(node.token.value).set_position(node.position_start, node.position_end))
+    def visit_NumberNode(self, node, context):
+        return RuntimeResult().success(Number(node.token.value).set_context(context).set_position(node.position_start, node.position_end))
 
-    def visit_BinaryOperationNode(self, node):
+    def visit_BinaryOperationNode(self, node, context):
         observer = RuntimeResult()
 
-        left  = observer.register(self.visit(node.left))
+        left  = observer.register(self.visit(node.left, context))
         if observer.error: return observer
 
-        right = observer.register(self.visit(node.right))
+        right = observer.register(self.visit(node.right, context))
         if observer.error: return observer
 
         if   node.operation.type == TokenTypes.get('PLUS'):  result, error = left.addition(right)
@@ -40,10 +40,10 @@ class Interpreter:
             )
         )
 
-    def visit_UnaryOperationNode(self, node):
+    def visit_UnaryOperationNode(self, node, context):
         observer = RuntimeResult()
 
-        number = observer.register(self.visit(node.node))
+        number = observer.register(self.visit(node.node, context))
         if observer.error: return observer
 
         error = None
