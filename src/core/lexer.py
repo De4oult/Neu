@@ -47,6 +47,10 @@ class Lexer:
                 tokens.append(Token('SLASH', start = self.pos))
                 self.next()
             
+            elif self.char == '^':
+                tokens.append(Token('POW', start = self.pos))
+                self.next()
+
             elif self.char == '(':
                 tokens.append(Token('LPAREN', start = self.pos))
                 self.next()

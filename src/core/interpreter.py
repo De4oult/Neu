@@ -31,6 +31,7 @@ class Interpreter:
         elif node.operation.type == TokenTypes.get('MINUS'): result, error = left.subtraction(right)
         elif node.operation.type == TokenTypes.get('STAR'):  result, error = left.multiplication(right)
         elif node.operation.type == TokenTypes.get('SLASH'): result, error = left.division(right)
+        elif node.operation.type == TokenTypes.get('POW'):   result, error = left.exponentiation(right)
 
         if error: return observer.failure(error)
             

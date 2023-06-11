@@ -33,24 +33,12 @@ class Parser:
         
     ### TOKENS VALIDATORS
 
-    def factor(self):
+    def atom(self):
         observer = Result()
 
-        token = self.token
+        token    = self.token
 
         if token.type in (
-            TokenTypes.get('PLUS'),
-            TokenTypes.get('MINUS')
-        ):
-            observer.register(self.next())
-
-            factor = observer.register(self.factor())
-            
-            if observer.error: return observer
-
-            return observer.success(UnaryOperationNode(token, factor))
-
-        elif token.type in (
             TokenTypes.get('INT'),
             TokenTypes.get('FLOAT')
         ):
@@ -83,9 +71,34 @@ class Parser:
             InvalidSyntax(
                 token.position_start,
                 token.position_end,
-                'integer or float expected'
+                'integer, float, `+`, `-` or `(` expected'
             )
         )
+
+    def power(self):
+        return self.binary_operation(self.atom, (
+                TokenTypes.get('POW')
+            ),
+            self.factor
+        )
+
+    def factor(self):
+        observer = Result()
+
+        token = self.token
+
+        if token.type in (
+            TokenTypes.get('PLUS'),
+            TokenTypes.get('MINUS')
+        ):
+            observer.register(self.next())
+
+            factor = observer.register(self.factor())
+            if observer.error: return observer
+
+            return observer.success(UnaryOperationNode(token, factor))
+
+        return self.power()
 
     def term(self):
         return self.binary_operation(self.factor, (
@@ -101,9 +114,10 @@ class Parser:
             )
         )
 
-    ### OPERATIONS
+    def binary_operation(self, function, operators: tuple[str], function_second = None):
+        if function_second == None:
+            function_second = function
 
-    def binary_operation(self, function, operators: tuple[str]):
         observer = Result()
 
         left = observer.register(function())
@@ -114,7 +128,7 @@ class Parser:
 
             observer.register(self.next())
             
-            right = observer.register(function())
+            right = observer.register(function_second())
             if observer.error: return observer
             
             left  = BinaryOperationNode(left, operator_token, right)

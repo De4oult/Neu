@@ -5,6 +5,7 @@ TokenTypes = {
     'MINUS'  : 'Subtract',
     'STAR'   : 'Multiply',
     'SLASH'  : 'Divide',
+    'POW'    : 'Pow',
     'LPAREN' : 'LParen',
     'RPAREN' : 'RParen',
     'EOF'    : 'EndOfFile',

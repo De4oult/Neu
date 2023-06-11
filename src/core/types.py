@@ -32,5 +32,9 @@ class Number:
             if other.value == 0: return None, RuntimeError(other.position_start, other.position_end, 'you can\'t divide by 0', self.context)
             return Number(self.value / other.value).set_context(self.context), None
 
+    def exponentiation(self, other) -> tuple:
+        if isinstance(other, Number):
+            return Number(self.value ** other.value).set_context(self.context), None
+
     def __repr__(self) -> str:
         return str(self.value)
