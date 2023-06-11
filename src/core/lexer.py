@@ -1,6 +1,6 @@
-from core.tokens    import Token, TokenTypes, KeywordTokens
 from core.constants import NUMBERS, LET_NUM, LETTERS
 from core.errors    import Position, UndefinedToken
+from core.tokens    import Token, KeywordTokens
 
 
 class Lexer:

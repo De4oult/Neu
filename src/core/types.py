@@ -36,5 +36,8 @@ class Number:
         if isinstance(other, Number):
             return Number(self.value ** other.value).set_context(self.context), None
 
+    def copy(self):
+        return Number(self.value).set_position(self.position_start, self.position_end).set_context(self.context)
+
     def __repr__(self) -> str:
         return str(self.value)

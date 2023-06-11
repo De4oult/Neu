@@ -34,7 +34,8 @@ class Interpreter:
                     context
                 )
             )
-
+        
+        value = value.copy().set_position(node.position_start, node.position_end)
         return observer.success(value)
 
     def visit_VariableAssignmentNode(self, node, context):

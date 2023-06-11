@@ -42,23 +42,28 @@ class Parser:
             TokenTypes.get('INT'),
             TokenTypes.get('FLOAT')
         ):
-            observer.register(self.next())
+            observer.register_next()
+            self.next()
 
             return observer.success(NumberNode(token))
 
         elif token.type == TokenTypes.get('IDENTIFIER'):
-            observer.register(self.next())
+            observer.register_next()
+            self.next()
+            
             return observer.success(VariableAccessNode(token))
 
         elif token.type == TokenTypes.get('LPAREN'):
-            observer.register(self.next())
+            observer.register_next()
+            self.next()
 
             expression = observer.register(self.expression())
 
             if observer.error: return observer
             
             if self.token.type == TokenTypes.get('RPAREN'):
-                observer.register(self.next())
+                observer.register_next()
+                self.next()
                 
                 return observer.success(expression)
             
@@ -75,7 +80,7 @@ class Parser:
             InvalidSyntax(
                 token.position_start,
                 token.position_end,
-                'integer, float, `+`, `-` or `(` expected'
+                'integer, float, identifier, `+`, `-` or `(` expected'
             )
         )
 
@@ -95,7 +100,8 @@ class Parser:
             TokenTypes.get('PLUS'),
             TokenTypes.get('MINUS')
         ):
-            observer.register(self.next())
+            observer.register_next()
+            self.next()
 
             factor = observer.register(self.factor())
             if observer.error: return observer
@@ -115,7 +121,8 @@ class Parser:
         observer = Result()
 
         if self.token.matches(TokenTypes.get('KEYWORD'), 'save'):
-            observer.register(self.next())
+            observer.register_next()
+            self.next()
 
             if self.token.type != TokenTypes.get('IDENTIFIER'):
                 return observer.failure(
@@ -128,7 +135,8 @@ class Parser:
             
             variable_name = self.token
             
-            observer.register(self.next())
+            observer.register_next()
+            self.next()
 
             if self.token.type != TokenTypes.get('EQ'):  # maybe change it later
                 return observer.failure(
@@ -139,18 +147,32 @@ class Parser:
                     )
                 )
             
-            observer.register(self.next())
+            observer.register_next()
+            self.next()
 
             expression = observer.register(self.expression())
             if observer.error: return observer
 
             return observer.success(VariableAssignmentNode(variable_name, expression))
 
-        return self.binary_operation(self.term, (
-                TokenTypes.get('PLUS'),
-                TokenTypes.get('MINUS')
+        node = observer.register(
+            self.binary_operation(
+                self.term, (
+                    TokenTypes.get('PLUS'),
+                    TokenTypes.get('MINUS')
+                )
             )
         )
+        if observer.error: 
+            return observer.failure(
+                InvalidSyntax(
+                    self.token.position_start, 
+                    self.token.position_end,
+                    'int, float, identifier, `save`, `+`, `-` or `(` expected'                    
+                )
+            )
+        
+        return observer.success(node)
 
     def binary_operation(self, function, operators: tuple[str], function_second = None):
         if function_second == None:
@@ -164,7 +186,8 @@ class Parser:
         while self.token.type in operators:
             operator_token = self.token
 
-            observer.register(self.next())
+            observer.register_next()
+            self.next()
             
             right = observer.register(function_second())
             if observer.error: return observer
