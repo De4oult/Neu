@@ -1,5 +1,6 @@
 from core.observer import RuntimeResult
 from core.tokens   import TokenTypes
+from core.errors   import RuntimeError
 from core.types    import Number
 
 class Interpreter:
@@ -12,11 +13,39 @@ class Interpreter:
        
         return method(node, context)
     
-    def no_visit(self, node):
+    def no_visit(self, node, context):
         raise Exception(f'visit_{type(node).__name__} method is not defined')
     
     def visit_NumberNode(self, node, context):
         return RuntimeResult().success(Number(node.token.value).set_context(context).set_position(node.position_start, node.position_end))
+
+    def visit_VariableAccessNode(self, node, context):
+        observer = RuntimeResult()
+
+        variable_name = node.variable_name.value
+        value         = context.table.get(variable_name)
+
+        if not value:
+            return observer.failure(
+                RuntimeError(
+                    node.position_start, 
+                    node.position_end,
+                    f'`{variable_name}` is not defined',
+                    context
+                )
+            )
+
+        return observer.success(value)
+
+    def visit_VariableAssignmentNode(self, node, context):
+        observer = RuntimeResult()
+        
+        variable_name = node.variable_name.value
+        value         = observer.register(self.visit(node.value, context))
+        if observer.error: return observer
+
+        context.table.set(variable_name, value)
+        return observer.success(value)
 
     def visit_BinaryOperationNode(self, node, context):
         observer = RuntimeResult()
@@ -58,3 +87,4 @@ class Interpreter:
                 node.position_end
             )
         )
+    

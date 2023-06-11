@@ -1,0 +1,4 @@
+save name -> "John"
+save age  -> 10
+
+displine(name + " " + string(age))

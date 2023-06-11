@@ -3,3 +3,4 @@ class Context:
         self.display               = display
         self.parent                = parent
         self.parent_entry_position = parent_entry_position
+        self.table                 = None

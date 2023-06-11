@@ -46,6 +46,10 @@ class Parser:
 
             return observer.success(NumberNode(token))
 
+        elif token.type == TokenTypes.get('IDENTIFIER'):
+            observer.register(self.next())
+            return observer.success(VariableAccessNode(token))
+
         elif token.type == TokenTypes.get('LPAREN'):
             observer.register(self.next())
 
@@ -108,6 +112,40 @@ class Parser:
         )
 
     def expression(self):
+        observer = Result()
+
+        if self.token.matches(TokenTypes.get('KEYWORD'), 'save'):
+            observer.register(self.next())
+
+            if self.token.type != TokenTypes.get('IDENTIFIER'):
+                return observer.failure(
+                    InvalidSyntax(
+                        self.token.position_start, 
+                        self.token.position_end,
+                        'identifier expected'
+                    )
+                )
+            
+            variable_name = self.token
+            
+            observer.register(self.next())
+
+            if self.token.type != TokenTypes.get('EQ'):  # maybe change it later
+                return observer.failure(
+                    InvalidSyntax(
+                        self.token.position_start, 
+                        self.token.position_end,
+                        'assignment operator expected'
+                    )
+                )
+            
+            observer.register(self.next())
+
+            expression = observer.register(self.expression())
+            if observer.error: return observer
+
+            return observer.success(VariableAssignmentNode(variable_name, expression))
+
         return self.binary_operation(self.term, (
                 TokenTypes.get('PLUS'),
                 TokenTypes.get('MINUS')

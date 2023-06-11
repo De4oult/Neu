@@ -1,6 +1,6 @@
+from core.tokens    import Token, TokenTypes, KeywordTokens
+from core.constants import NUMBERS, LET_NUM, LETTERS
 from core.errors    import Position, UndefinedToken
-from core.constants import NUMBERS
-from core.tokens    import Token
 
 
 class Lexer:
@@ -23,9 +23,11 @@ class Lexer:
             if self.is_number():
                 tokens.append(self.make_number())
 
+            elif self.is_letter():
+                tokens.append(self.make_identifier())
+
             elif self.char in ' \t':
                 self.next()
-
 
             #######################
             #   PARSE OPERATORS   #
@@ -49,6 +51,10 @@ class Lexer:
             
             elif self.char == '^':
                 tokens.append(Token('POW', start = self.pos))
+                self.next()
+
+            elif self.char == '=':
+                tokens.append(Token('EQ', start = self.pos))
                 self.next()
 
             elif self.char == '(':
@@ -99,9 +105,26 @@ class Lexer:
         
         return Token('FLOAT', float(number), start, self.pos)
     
+    def make_identifier(self):
+        identifier: str = ''
+        start           = self.pos.copy()
+
+        while (
+            (self.char != None) and
+            (self.char in LET_NUM + '_')
+        ):
+            identifier += self.char
+            self.next()
+
+        token_type = 'KEYWORD' if (identifier in KeywordTokens) else 'IDENTIFIER'
+
+        return Token(token_type, identifier, start, self.pos)
 
     ################
     #   BOOLEANS   #
     ################
     def is_number(self) -> bool: # check if token is integer or float
         return self.char in NUMBERS
+    
+    def is_letter(self) -> bool: # check if token is keyword or var_name
+        return self.char in LETTERS

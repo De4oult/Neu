@@ -10,7 +10,22 @@ class NumberNode:
 
     def __repr__(self) -> str:
         return f'{self.token}'
-    
+
+class VariableAccessNode:
+    def __init__(self, variable_name) -> None:
+        self.variable_name = variable_name
+
+        self.position_start = self.variable_name.position_start
+        self.position_end   = self.variable_name.position_end
+
+class VariableAssignmentNode:
+    def __init__(self, variable_name, value) -> None:
+        self.variable_name = variable_name
+        self.value         = value
+
+        self.position_start = self.variable_name.position_start
+        self.position_end   = self.value.position_end
+
 class BinaryOperationNode:
     def __init__(self, left, operation, right) -> None:
         self.left      = left
