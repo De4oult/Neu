@@ -123,3 +123,47 @@ class Interpreter:
             return observer.success(else_value)
     
         return observer.success(None)
+    
+    def visit_ForNode(self, node, context):
+        observer = RuntimeResult()
+
+        start_value = observer.register(self.visit(node.start_value, context))
+        if observer.error: return observer
+
+        end_value = observer.register(self.visit(node.end_value, context))
+        if observer.error: return observer
+
+        if node.step_value:
+            step_value = observer.register(self.visit(node.step_value, context))
+            if observer.error: return observer
+        
+        else:
+            step_value = Number(1)
+
+        if step_value.value >= 0:
+            condition = lambda: start_value.value < end_value.value
+        else:
+            condition = lambda: start_value.value > end_value.value
+
+        while condition():
+            context.table.set(node.variable_name.value, Number(start_value.value))
+            start_value.value += step_value.value
+
+            observer.register(self.visit(node.body, context))
+            if observer.error: return observer
+
+        return observer.success(None)
+    
+    def visit_LoopNode(self, node, context):
+        observer = RuntimeResult()
+
+        while True:
+            condition = observer.register(self.visit(node.condition, context))
+            if observer.error: return observer
+
+            if not condition.is_true(): break
+
+            observer.register(self.visit(node.body, context))
+            if observer.error: return observer
+
+        return observer.success(None)

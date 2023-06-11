@@ -31,7 +31,7 @@ class Parser:
 
         return observer
         
-    ### TOKENS VALIDATORS
+    ### AST
 
     def if_expression(self):
         observer  = Result()
@@ -103,6 +103,120 @@ class Parser:
 
         return observer.success(IfNode(cases, else_case))
 
+    def for_expression(self):
+        observer = Result()
+
+        if not self.token.matches(TokenTypes.get('KEYWORD'), 'for'):
+            return observer.failure(
+                InvalidSyntax(
+                    self.token.position_start,
+                    self.token.position_end,
+                    '`for` expected'
+                )
+            )
+        
+        observer.register_next()
+        self.next()
+
+        if self.token.type != TokenTypes.get('IDENTIFIER'):
+            return observer.failure(
+                InvalidSyntax(
+                    self.token.position_start,
+                    self.token.position_end,
+                    'identifier expected'                    
+                )
+            )
+
+        variable_name = self.token
+
+        observer.register_next()
+        self.next()
+
+        if self.token.type != TokenTypes.get('EQ'):
+            return observer.failure(
+                InvalidSyntax(
+                    self.token.position_start,
+                    self.token.position_end,
+                    '`=` expected'
+                )
+            )
+        
+        observer.register_next()
+        self.next()
+
+        start_value = observer.register(self.expression())
+        if observer.error: return observer
+
+        if not self.token.matches(TokenTypes.get('KEYWORD'), 'to'):
+            return observer.failure(
+                InvalidSyntax(
+                    self.token.position_start,
+                    self.token.position_end,
+                    '`to` expected'
+                )
+            )
+        
+        observer.register_next()
+        self.next()
+
+        end_value = observer.register(self.expression())
+        if observer.error: return observer
+
+        step_value = None
+
+        if not self.token.type == TokenTypes.get('POINTER'):
+            return observer.failure(
+                InvalidSyntax(
+                    self.token.position_start,
+                    self.token.position_end,
+                    '`->` expected'
+                )
+            )
+        
+        observer.register_next()
+        self.next()
+
+        body = observer.register(self.expression())
+        if observer.error: return observer
+
+        return observer.success(ForNode(variable_name, start_value, end_value, step_value, body))
+            
+    def loop_expression(self):
+        observer = Result()
+
+        if not self.token.matches(TokenTypes.get('KEYWORD'), 'loop'):
+            return observer.failure(
+                InvalidSyntax(
+                    self.token.position_start,
+                    self.token.position_end,
+                    '`loop` expected'
+                )
+            )
+        
+        observer.register_next()
+        self.next()
+
+        condition = observer.register(self.expression())
+        if observer.error: return observer
+
+        if not self.token.type == TokenTypes.get('POINTER'):
+            return observer.failure(
+                InvalidSyntax(
+                    self.token.position_start,
+                    self.token.position_end,
+                    '`->` expected'
+                )
+            )      
+        
+        observer.register_next()
+        self.next()
+
+        body = observer.register(self.expression())
+        if observer.error: return observer
+
+        return observer.success(LoopNode(condition, body))     
+
+
     def atom(self):
         observer = Result()
 
@@ -120,6 +234,12 @@ class Parser:
         elif token.type == TokenTypes.get('IDENTIFIER'):
             observer.register_next()
             self.next()
+
+            if self.token.type == TokenTypes.get('INC'):
+                print('not allowed now')
+
+            elif self.token.type == TokenTypes.get('DEC'):
+                print('not allowed now')
             
             return observer.success(VariableAccessNode(token))
 
@@ -151,6 +271,18 @@ class Parser:
             if observer.error: return observer
 
             return observer.success(if_expression)
+
+        elif token.matches(TokenTypes.get('KEYWORD'), 'for'):
+            for_expression = observer.register(self.for_expression())
+            if observer.error: return observer
+            
+            return observer.success(for_expression)
+
+        elif token.matches(TokenTypes.get('KEYWORD'), 'loop'):
+            loop_expression = observer.register(self.loop_expression())
+            if observer.error: return observer
+            
+            return observer.success(loop_expression)
 
         return observer.failure(
             InvalidSyntax(

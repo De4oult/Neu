@@ -32,7 +32,11 @@ KeywordTokens = [
     'not',
     'if',
     'elif',
-    'else'
+    'else',
+    'for',
+    'loop',
+    'to',
+    'break'
 ]
 
 class Token:
