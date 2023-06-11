@@ -91,6 +91,8 @@ class Interpreter:
         error = None
 
         if   node.operation.type == TokenTypes.get('MINUS'):           number, error = number.multiplication(Number(-1))
+        elif node.operation.type == TokenTypes.get('INC'):             number, error = number.increment()
+        elif node.operation.type == TokenTypes.get('DEC'):             number, error = number.decrement()
         elif node.operation.matches(TokenTypes.get('KEYWORD'), 'not'): number, error = number.negation()
 
         if error: return observer.failure(error)
@@ -101,3 +103,23 @@ class Interpreter:
             )
         )
     
+    def visit_IfNode(self, node, context):
+        observer = RuntimeResult()
+
+        for condition, expression in node.cases:
+            condition = observer.register(self.visit(condition, context))
+            if observer.error: return observer
+
+            if condition.is_true():
+                expression = observer.register(self.visit(expression, context))
+                if observer.error: return observer
+
+                return observer.success(expression)
+            
+        if node.else_case:
+            else_value = observer.register(self.visit(node.else_case, context))
+            if observer.error: return observer
+
+            return observer.success(else_value)
+    
+        return observer.success(None)

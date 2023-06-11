@@ -68,11 +68,22 @@ class Number:
         if isinstance(other, Number):
             return Number(int(self.value or other.value)).set_context(self.context), None
 
+    # Unary
     def negation(self):
         return Number(1 if self.value == 0 else 0).set_context(self.context), None
 
+    def increment(self):
+        return Number(self.value + 1).set_context(self.context), None
+
+    def decrement(self):
+        return Number(self.value - 1).set_context(self.context), None
+    
+    # Service methods
     def copy(self):
         return Number(self.value).set_position(self.position_start, self.position_end).set_context(self.context)
+
+    def is_true(self):
+        return self.value != 0
 
     def __repr__(self) -> str:
         return str(self.value)

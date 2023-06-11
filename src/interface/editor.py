@@ -7,8 +7,8 @@ def editor() -> None:
         try:
             res, err = execute('<interpreter>', input("{:03d} ~ ".format(line)))
             
-            if err: print(err.as_string())
-            else:   print(Fore.GREEN + f'{res}' + Style.RESET_ALL)
+            if err:   print(err.as_string())
+            elif res: print(Fore.GREEN + f'{res}' + Style.RESET_ALL)
             
             line += 1
 

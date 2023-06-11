@@ -8,6 +8,10 @@ TokenTypes = {
     'POW'        : 'Pow',
     'LPAREN'     : 'LParen',
     'RPAREN'     : 'RParen',
+    'LBRACKET'   : 'LBracket',
+    'RBRACKET'   : 'RBracket',
+    'INC'        : 'Increment',
+    'DEC'        : 'Decrement',
     'EQ'         : 'Assign',
     'EE'         : 'Equals',
     'NE'         : 'NotEquals',
@@ -17,6 +21,7 @@ TokenTypes = {
     'GTE'        : 'GreaterThanOrEquals',
     'KEYWORD'    : 'Keyword',
     'IDENTIFIER' : 'Identifier',
+    'POINTER'    : 'Pointer',
     'EOF'        : 'EndOfFile'
 }
 
@@ -24,7 +29,10 @@ KeywordTokens = [
     'save',
     'and',
     'or',
-    'not'
+    'not',
+    'if',
+    'elif',
+    'else'
 ]
 
 class Token:

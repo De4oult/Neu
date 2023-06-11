@@ -33,10 +33,80 @@ class Parser:
         
     ### TOKENS VALIDATORS
 
+    def if_expression(self):
+        observer  = Result()
+        cases     = []
+        else_case = None
+
+        if not self.token.matches(TokenTypes.get('KEYWORD'), 'if'):
+            return observer.failure(
+                InvalidSyntax(
+                    self.token.position_start,
+                    self.token.position_end,
+                    '`if` expected'
+                )
+            )
+        
+        observer.register_next()
+        self.next()
+
+        condition = observer.register(self.expression())
+        if observer.error: return observer
+
+        if not self.token.type == TokenTypes.get('POINTER'):
+            return observer.failure(
+                InvalidSyntax(
+                    self.token.position_start,
+                    self.token.position_end,
+                    'pointer `->` excpected'
+                )
+            )
+        
+        observer.register_next()
+        self.next()
+
+        expression = observer.register(self.expression())
+        if observer.error: return observer
+        
+        cases.append((condition, expression))
+
+        while self.token.matches(TokenTypes.get('KEYWORD'), 'elif'):
+            observer.register_next()
+            self.next()
+
+            condition = observer.register(self.expression())
+            if observer.error: return observer
+
+            if not self.token.type == TokenTypes.get('POINTER'):
+                return observer.failure(
+                    InvalidSyntax(
+                        self.token.position_start,
+                        self.token.position_end,
+                        'pointer `->` excpected'
+                    )
+                )
+            
+            observer.register_next()
+            self.next()
+
+            expression = observer.register(self.expression())
+            if observer.error: return observer
+
+            cases.append((condition, expression))
+
+        if self.token.matches(TokenTypes.get('KEYWORD'), 'else'):
+            observer.register_next()
+            self.next()
+
+            else_case = observer.register(self.expression())
+            if observer.error: return observer
+
+        return observer.success(IfNode(cases, else_case))
+
     def atom(self):
         observer = Result()
 
-        token    = self.token
+        token = self.token
 
         if token.type in (
             TokenTypes.get('INT'),
@@ -75,6 +145,12 @@ class Parser:
                         '`)` expected'
                     )
                 )
+            
+        elif token.matches(TokenTypes.get('KEYWORD'), 'if'):
+            if_expression = observer.register(self.if_expression())
+            if observer.error: return observer
+
+            return observer.success(if_expression)
 
         return observer.failure(
             InvalidSyntax(
@@ -98,7 +174,9 @@ class Parser:
 
         if token.type in (
             TokenTypes.get('PLUS'),
-            TokenTypes.get('MINUS')
+            TokenTypes.get('MINUS'),
+            TokenTypes.get('INC'),
+            TokenTypes.get('DEC')
         ):
             observer.register_next()
             self.next()
@@ -113,7 +191,9 @@ class Parser:
     def term(self):
         return self.binary_operation(self.factor, (
                 TokenTypes.get('STAR'),
-                TokenTypes.get('SLASH')
+                TokenTypes.get('SLASH'),
+                TokenTypes.get('INC'),
+                TokenTypes.get('DEC')
             )
         )
     

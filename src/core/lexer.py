@@ -33,12 +33,10 @@ class Lexer:
             # PARSE OPERATORS
 
             elif self.char == '+':
-                tokens.append(Token('PLUS', start = self.pos))
-                self.next()
+                tokens.append(self.make_increment())
             
             elif self.char == '-':
-                tokens.append(Token('MINUS', start = self.pos))
-                self.next()
+                tokens.append(self.make_minus())
             
             elif self.char == '*':
                 tokens.append(Token('STAR', start = self.pos))
@@ -133,6 +131,7 @@ class Lexer:
 
     def make_not_equals(self):
         start = self.pos.copy()
+        
         self.next()
 
         if self.char == '=':
@@ -144,7 +143,8 @@ class Lexer:
 
     def make_equals(self):
         token_type = 'EQ'
-        start = self.pos.copy()
+        start      = self.pos.copy()
+        
         self.next()
 
         if self.char == '=':
@@ -155,7 +155,8 @@ class Lexer:
     
     def make_less_than(self):
         token_type = 'LT'
-        start = self.pos.copy()
+        start      = self.pos.copy()
+
         self.next()
 
         if self.char == '=':
@@ -166,7 +167,8 @@ class Lexer:
 
     def make_greater_than(self):
         token_type = 'GT'
-        start = self.pos.copy()
+        start      = self.pos.copy()
+
         self.next()
 
         if self.char == '=':
@@ -174,7 +176,34 @@ class Lexer:
             token_type = 'GTE'
 
         return Token(token_type, start = start, end = self.pos)
+        
+    def make_minus(self):
+        token_type = 'MINUS'
+        start      = self.pos.copy()
+
+        self.next()
+
+        if self.char == '>':
+            self.next()
+            token_type = 'POINTER'
+
+        elif self.char == '-':
+            self.next()
+            token_type = 'DEC'
+
+        return Token(token_type, start = start, end = self.pos)
     
+    def make_increment(self):
+        token_type = 'PLUS'
+        start      = self.pos.copy()
+
+        self.next()
+
+        if self.char == '+':
+            self.next()
+            token_type = 'INC'
+
+        return Token(token_type, start = start, end = self.pos)
 
     # BOOLEANS
 

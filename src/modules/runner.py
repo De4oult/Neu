@@ -5,11 +5,12 @@ from core.types       import Number
 from core.lexer       import Lexer
 from core.table       import Table
 
+table = Table()
+table.set('null',  Number(0))
+table.set('false', Number(0))
+table.set('true',  Number(1))
+
 def execute(filename: str, content: str) -> tuple[list[str], str]:
-    table = Table()
-    table.set('null',  Number(0))
-    table.set('false', Number(0))
-    table.set('true',  Number(1))
 
     # Tokenizing
     lexer = Lexer(filename, content)
