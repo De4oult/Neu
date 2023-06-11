@@ -2,7 +2,7 @@ information:
   name: Neu
   ver:  v0.1 (nightly)
 
-depend:
+dependncies:
   - docopt
 
 usage: >
