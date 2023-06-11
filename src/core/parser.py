@@ -191,16 +191,16 @@ class Parser:
     def term(self):
         return self.binary_operation(self.factor, (
                 TokenTypes.get('STAR'),
-                TokenTypes.get('SLASH'),
-                TokenTypes.get('INC'),
-                TokenTypes.get('DEC')
+                TokenTypes.get('SLASH')
             )
         )
     
     def arithmetical_expression(self):
         return self.binary_operation(self.term, (
                 TokenTypes.get('PLUS'),
-                TokenTypes.get('MINUS')
+                TokenTypes.get('MINUS'),
+                TokenTypes.get('INC'),
+                TokenTypes.get('DEC')
             )
         )
     
