@@ -86,7 +86,7 @@ class Parser:
 
     def power(self):
         return self.binary_operation(self.atom, (
-                TokenTypes.get('POW')
+                TokenTypes.get('POW'), 
             ),
             self.factor
         )
@@ -116,6 +116,52 @@ class Parser:
                 TokenTypes.get('SLASH')
             )
         )
+    
+    def arithmetical_expression(self):
+        return self.binary_operation(self.term, (
+                TokenTypes.get('PLUS'),
+                TokenTypes.get('MINUS')
+            )
+        )
+    
+    def compare_expression(self):
+        observer = Result()
+
+        if self.token.matches(TokenTypes.get('KEYWORD'), 'not'):
+            operator = self.token
+            
+            observer.register_next()
+            self.next()
+
+            node = observer.register(self.compare_expression())
+            if observer.error: return observer
+            
+            return observer.success(UnaryOperationNode(operator, node))
+        
+        node = observer.register(
+            self.binary_operation(
+                self.arithmetical_expression,
+                (
+                    TokenTypes.get('EE'),
+                    TokenTypes.get('NE'),
+                    TokenTypes.get('LT'),
+                    TokenTypes.get('GT'),
+                    TokenTypes.get('LTE'),
+                    TokenTypes.get('GTE')
+                )
+            )
+        )
+
+        if observer.error:
+            return observer.failure(
+                InvalidSyntax(
+                    self.token.position_start,
+                    self.token.position_end,
+                    'integer, float, identifier, `+`, `-`, `not` or `(` expected'
+                )
+            )
+        
+        return observer.success(node)
 
     def expression(self):
         observer = Result()
@@ -157,9 +203,9 @@ class Parser:
 
         node = observer.register(
             self.binary_operation(
-                self.term, (
-                    TokenTypes.get('PLUS'),
-                    TokenTypes.get('MINUS')
+                self.compare_expression, (
+                    (TokenTypes.get('KEYWORD'), 'and'),
+                    (TokenTypes.get('KEYWORD'), 'or')
                 )
             )
         )
@@ -168,7 +214,7 @@ class Parser:
                 InvalidSyntax(
                     self.token.position_start, 
                     self.token.position_end,
-                    'int, float, identifier, `save`, `+`, `-` or `(` expected'                    
+                    'int, float, keyword, identifier or operator expected'                    
                 )
             )
         
@@ -183,7 +229,7 @@ class Parser:
         left = observer.register(function())
         if observer.error: return observer
 
-        while self.token.type in operators:
+        while self.token.type in operators or (self.token.type, self.token.value) in operators:
             operator_token = self.token
 
             observer.register_next()

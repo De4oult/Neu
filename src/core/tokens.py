@@ -9,13 +9,22 @@ TokenTypes = {
     'LPAREN'     : 'LParen',
     'RPAREN'     : 'RParen',
     'EQ'         : 'Assign',
+    'EE'         : 'Equals',
+    'NE'         : 'NotEquals',
+    'LT'         : 'LessThan',
+    'GT'         : 'GreaterThan',
+    'LTE'        : 'LessThanOrEquals',
+    'GTE'        : 'GreaterThanOrEquals',
     'KEYWORD'    : 'Keyword',
     'IDENTIFIER' : 'Identifier',
     'EOF'        : 'EndOfFile'
 }
 
 KeywordTokens = [
-    'save'
+    'save',
+    'and',
+    'or',
+    'not'
 ]
 
 class Token:

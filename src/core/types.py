@@ -16,8 +16,7 @@ class Number:
         self.context = context
         return self
 
-    # Operations
-
+    # Math Operations
     def addition(self, other) -> tuple:
         if isinstance(other, Number): return Number(self.value + other.value).set_context(self.context), None
 
@@ -35,6 +34,42 @@ class Number:
     def exponentiation(self, other) -> tuple:
         if isinstance(other, Number):
             return Number(self.value ** other.value).set_context(self.context), None
+
+    # Logical Operations
+    def comparison_eq(self, other):
+        if isinstance(other, Number):
+            return Number(int(self.value == other.value)).set_context(self.context), None
+
+    def comparison_ne(self, other):
+        if isinstance(other, Number):
+            return Number(int(self.value != other.value)).set_context(self.context), None
+
+    def comparison_lt(self, other):
+        if isinstance(other, Number):
+            return Number(int(self.value < other.value)).set_context(self.context), None
+
+    def comparison_gt(self, other):
+        if isinstance(other, Number):
+            return Number(int(self.value > other.value)).set_context(self.context), None
+
+    def comparison_lte(self, other):
+        if isinstance(other, Number):
+            return Number(int(self.value <= other.value)).set_context(self.context), None
+
+    def comparison_gte(self, other):
+        if isinstance(other, Number):
+            return Number(int(self.value >= other.value)).set_context(self.context), None
+
+    def comparison_and(self, other):
+        if isinstance(other, Number):
+            return Number(int(self.value and other.value)).set_context(self.context), None
+
+    def comparison_or(self, other):
+        if isinstance(other, Number):
+            return Number(int(self.value or other.value)).set_context(self.context), None
+
+    def negation(self):
+        return Number(1 if self.value == 0 else 0).set_context(self.context), None
 
     def copy(self):
         return Number(self.value).set_position(self.position_start, self.position_end).set_context(self.context)

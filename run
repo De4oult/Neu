@@ -1,0 +1,2 @@
+clear && python src/neu.py $1
+#clear && python src/neu.py index.neu

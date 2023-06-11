@@ -1,5 +1,5 @@
+from core.errors    import Position, UndefinedToken, ExpectedChar
 from core.constants import NUMBERS, LET_NUM, LETTERS
-from core.errors    import Position, UndefinedToken
 from core.tokens    import Token, KeywordTokens
 
 
@@ -29,9 +29,8 @@ class Lexer:
             elif self.char in ' \t':
                 self.next()
 
-            #######################
-            #   PARSE OPERATORS   #
-            #######################
+
+            # PARSE OPERATORS
 
             elif self.char == '+':
                 tokens.append(Token('PLUS', start = self.pos))
@@ -53,10 +52,6 @@ class Lexer:
                 tokens.append(Token('POW', start = self.pos))
                 self.next()
 
-            elif self.char == '=':
-                tokens.append(Token('EQ', start = self.pos))
-                self.next()
-
             elif self.char == '(':
                 tokens.append(Token('LPAREN', start = self.pos))
                 self.next()
@@ -64,6 +59,20 @@ class Lexer:
             elif self.char == ')':
                 tokens.append(Token('RPAREN', start = self.pos))
                 self.next()
+            
+            elif self.char == '!':
+                token, error = self.make_not_equals()
+                if error: return [], error
+                tokens.append(token)
+
+            elif self.char == '=':
+                tokens.append(self.make_equals())
+
+            elif self.char == '<':
+                tokens.append(self.make_less_than())
+
+            elif self.char == '>':
+                tokens.append(self.make_greater_than())
             
             else:
                 position_start = self.pos.copy()
@@ -80,6 +89,8 @@ class Lexer:
         tokens.append(Token('EOF', start = self.pos))
         return tokens, None
     
+    # MAKE METHODS
+
     def make_number(self) -> str: # function that convert tokens character into integer or float 
         number: str = ''
         dots  : int = 0
@@ -120,9 +131,53 @@ class Lexer:
 
         return Token(token_type, identifier, start, self.pos)
 
-    ################
-    #   BOOLEANS   #
-    ################
+    def make_not_equals(self):
+        start = self.pos.copy()
+        self.next()
+
+        if self.char == '=':
+            self.next()
+            return Token('NE', start = start, end = self.pos), None
+        
+        self.next()
+        return None, ExpectedChar(start, self.pos, '`=` (after `!`)')
+
+    def make_equals(self):
+        token_type = 'EQ'
+        start = self.pos.copy()
+        self.next()
+
+        if self.char == '=':
+            self.next()
+            token_type = 'EE'
+
+        return Token(token_type, start = start, end = self.pos)
+    
+    def make_less_than(self):
+        token_type = 'LT'
+        start = self.pos.copy()
+        self.next()
+
+        if self.char == '=':
+            self.next()
+            token_type = 'LTE'
+
+        return Token(token_type, start = start, end = self.pos)
+
+    def make_greater_than(self):
+        token_type = 'GT'
+        start = self.pos.copy()
+        self.next()
+
+        if self.char == '=':
+            self.next()
+            token_type = 'GTE'
+
+        return Token(token_type, start = start, end = self.pos)
+    
+
+    # BOOLEANS
+
     def is_number(self) -> bool: # check if token is integer or float
         return self.char in NUMBERS
     

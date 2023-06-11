@@ -57,11 +57,22 @@ class Interpreter:
         right = observer.register(self.visit(node.right, context))
         if observer.error: return observer
 
+        # MATH
         if   node.operation.type == TokenTypes.get('PLUS'):  result, error = left.addition(right)
         elif node.operation.type == TokenTypes.get('MINUS'): result, error = left.subtraction(right)
         elif node.operation.type == TokenTypes.get('STAR'):  result, error = left.multiplication(right)
         elif node.operation.type == TokenTypes.get('SLASH'): result, error = left.division(right)
         elif node.operation.type == TokenTypes.get('POW'):   result, error = left.exponentiation(right)
+        # LOGICAL
+        elif node.operation.type == TokenTypes.get('EE'):              result, error = left.comparison_eq(right)
+        elif node.operation.type == TokenTypes.get('NE'):              result, error = left.comparison_ne(right)
+        elif node.operation.type == TokenTypes.get('LT'):              result, error = left.comparison_lt(right)
+        elif node.operation.type == TokenTypes.get('GT'):              result, error = left.comparison_gt(right)
+        elif node.operation.type == TokenTypes.get('LTE'):             result, error = left.comparison_lte(right)
+        elif node.operation.type == TokenTypes.get('GTE'):             result, error = left.comparison_gte(right)
+        elif node.operation.matches(TokenTypes.get('KEYWORD'), 'and'): result, error = left.comparison_and(right)
+        elif node.operation.matches(TokenTypes.get('KEYWORD'), 'or' ): result, error = left.comparison_or(right)
+
 
         if error: return observer.failure(error)
             
@@ -79,7 +90,8 @@ class Interpreter:
 
         error = None
 
-        if node.operation.type == TokenTypes.get('MINUS'): number, error = number.multiplication(Number(-1))
+        if   node.operation.type == TokenTypes.get('MINUS'):           number, error = number.multiplication(Number(-1))
+        elif node.operation.matches(TokenTypes.get('KEYWORD'), 'not'): number, error = number.negation()
 
         if error: return observer.failure(error)
         

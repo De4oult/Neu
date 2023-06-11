@@ -65,4 +65,8 @@ class RuntimeError(Error):
         return 'Traceback: \n' + result
 
     def as_string(self) -> str:
-        return Fore.RED + f'{self.traceback()}{self.name} -> {self.info}\n' + Style.RESET_ALL  
+        return Fore.RED + f'{self.traceback()}{self.name} -> {self.info}\n' + Style.RESET_ALL
+    
+class ExpectedChar(Error):
+    def __init__(self, start: int, end: int, info: str) -> None:
+        super().__init__(start, end, 'Expected Character', info)
