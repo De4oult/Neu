@@ -2,8 +2,9 @@ information:
   name: Neu
   ver:  v0.1 (nightly)
 
-dependncies:
+dependecies:
   - docopt
+  - colorama
 
 usage: >
   Neu - script language implemented in Python v3.11.
