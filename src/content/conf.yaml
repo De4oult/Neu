@@ -1,6 +1,7 @@
 information:
-  name: Neu
-  ver:  v0.1 (nightly)
+  name:   Neu
+  ver:    v0.1 (nightly)
+  author: de4oult
 
 dependecies:
   - docopt
