@@ -75,3 +75,20 @@ class LoopNode:
 
         self.position_start = self.condition.position_start
         self.position_end   = self.body.position_end 
+
+class FunctionDefinitionNode:
+    def __init__(self, variable_name, arguments_names, body) -> None:
+        self.variable_name   = variable_name
+        self.arguments_names = arguments_names
+        self.body            = body
+
+        if self.variable_name:
+            self.position_start = self.variable_name.position_start
+        
+        elif len(self.arguments_names) > 0:
+            self.position_start = self.arguments_names[0].position_start
+        
+        else:
+            self.position_start = self.body.position_start
+
+        self.position_start = self.body.position_end

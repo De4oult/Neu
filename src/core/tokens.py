@@ -22,6 +22,7 @@ TokenTypes = {
     'KEYWORD'    : 'Keyword',
     'IDENTIFIER' : 'Identifier',
     'POINTER'    : 'Pointer',
+    'COMMA'      : 'Comma',
     'EOF'        : 'EndOfFile'
 }
 
@@ -36,7 +37,8 @@ KeywordTokens = [
     'for',
     'loop',
     'to',
-    'break'
+    'break',
+    'func'
 ]
 
 class Token:

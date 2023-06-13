@@ -57,6 +57,10 @@ class Lexer:
             elif self.char == ')':
                 tokens.append(Token('RPAREN', start = self.pos))
                 self.next()
+
+            elif self.char == ',':
+                tokens.append(Token('COMMA', start = self.pos))
+                self.next()
             
             elif self.char == '!':
                 token, error = self.make_not_equals()
