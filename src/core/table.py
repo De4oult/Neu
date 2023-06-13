@@ -1,9 +1,9 @@
 
 
 class Table:
-    def __init__(self) -> None:
+    def __init__(self, parent = None) -> None:
         self.symbols = {}
-        self.parent  = None
+        self.parent  = parent
 
     def get(self, name):
         value = self.symbols.get(name, None)

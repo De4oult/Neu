@@ -1,4 +1,3 @@
-from core.interpreter import Interpreter
 from core.observer    import RuntimeResult
 from core.errors      import RuntimeError
 from core.context     import Context
@@ -195,10 +194,8 @@ class Function(Value):
         self.body            = body
         self.arguments_names = arguments_names
 
-    def execute(self, arguments):
+    def execute(self, arguments, interpreter):
         observer = RuntimeResult()
-
-        interpreter = Interpreter()
 
         context = Context(self.name, self.context, self.position_start)
         context.table = Table(context.parent.table)

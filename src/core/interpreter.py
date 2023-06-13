@@ -1,7 +1,7 @@
+from core.types    import Number, Function
 from core.observer import RuntimeResult
-from core.tokens   import TokenTypes
 from core.errors   import RuntimeError
-from core.types    import Number
+from core.tokens   import TokenTypes
 
 class Interpreter:
     def visit(self, node, context):
@@ -167,3 +167,36 @@ class Interpreter:
             if observer.error: return observer
 
         return observer.success(None)
+    
+    def visit_FunctionDefinitionNode(self, node, context):
+        observer = RuntimeResult()
+
+        function_name   = node.variable_name.value if node.variable_name else None
+        body            = node.body
+        arguments_names = [argument_name.value for argument_name in node.arguments_names]
+
+        function_value  = Function(function_name, body, arguments_names).set_context(context).set_position(node.position_start, node.position_end)
+
+        if node.variable_name:
+            context.table.set(function_name, function_value)
+
+        return observer.success(function_value)
+    
+    def visit_CallNode(self, node, context):
+        observer = RuntimeResult()
+        
+        arguments = []
+
+        value = observer.register(self.visit(node.node, context))
+        if observer.error: return observer
+
+        value = value.copy().set_position(node.position_start, node.position_end)
+
+        for argument in node.arguments_names:
+            arguments.append(observer.register(self.visit(argument, context)))
+            if observer.error: return observer
+
+        return_value = observer.register(value.execute(arguments, Interpreter()))
+        if observer.error: return observer
+
+        return observer.success(return_value)
