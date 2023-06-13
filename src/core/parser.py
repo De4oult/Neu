@@ -216,6 +216,120 @@ class Parser:
 
         return observer.success(LoopNode(condition, body))     
 
+    def function_definition(self):
+        observer = Result()
+
+        if not self.token.matches(TokenTypes.get('KEYWORD'), 'func'):
+            return observer.failure(
+                InvalidSyntax(
+                    self.token.position_start,
+                    self.token.position_end,
+                    '`func` expected'
+                )
+            )
+        
+        observer.register_next()
+        self.next()
+
+        if self.token.type == TokenTypes.get('IDENTIFIER'):
+            function_name = self.token
+
+            observer.register_next()
+            self.next()
+
+            if self.token.type != TokenTypes.get('LPAREN'):
+                return observer.failure(
+                    InvalidSyntax(
+                        self.token.position_start,
+                        self.token.position_end,
+                        '`(` expected'
+                    )
+                )
+        
+        else:
+            function_name = None
+            
+            if self.token.type != TokenTypes.get('LPAREN'):
+                return observer.failure(
+                    InvalidSyntax(
+                        self.token.position_start,
+                        self.token.position_end,
+                        'identifier or `(` expected'
+                    )
+                )
+            
+        observer.register_next()
+        self.next()
+
+        arguments_names = []
+
+        if self.token.type == TokenTypes.get('IDENTIFIER'):
+            arguments_names.append(self.token)
+
+            observer.register_next()
+            self.next()
+
+            while self.token.type == TokenTypes.get('COMMA'):
+                observer.register_next()
+                self.next()
+
+                if self.token.type != TokenTypes.get('IDENTIFIER'):
+                    return observer.failure(
+                        InvalidSyntax(
+                            self.token.position_start,
+                            self.token.position_end,
+                            'argument expected'
+                        )
+                    )
+                
+                arguments_names.append(self.token)
+
+                observer.register_next()
+                self.next()
+            
+            if self.token.type != TokenTypes.get('RPAREN'):
+                return observer.failure(
+                    InvalidSyntax(
+                        self.token.position_start,
+                        self.token.position_end,
+                        '`,` or `)` expected'
+                    )
+                )
+        
+        else:
+            if self.token.type != TokenTypes.get('RPAREN'):
+                return observer.failure(
+                    InvalidSyntax(
+                        self.token.position_start,
+                        self.token.position_end,
+                        'argument or `)` expected'
+                    )
+                )
+            
+        observer.register_next()
+        self.next()
+
+        if self.token.type != TokenTypes.get('POINTER'):
+            return observer.failure(
+                InvalidSyntax(
+                    self.token.position_start,
+                    self.token.position_end,
+                    'pointer expected'
+                )
+            )
+        
+        observer.register_next()
+        self.next()
+
+        node = observer.register(self.expression())
+        if observer.error: return observer
+
+        return observer.success(FunctionDefinitionNode(
+                function_name,
+                arguments_names,
+                node
+            )
+        )
 
     def atom(self):
         observer = Result()
@@ -283,7 +397,13 @@ class Parser:
             if observer.error: return observer
             
             return observer.success(loop_expression)
-
+        
+        elif token.matches(TokenTypes.get('KEYWORD'), 'func'):
+            function_definition = observer.register(self.function_definition())
+            if observer.error: return observer
+            
+            return observer.success(function_definition)
+        
         return observer.failure(
             InvalidSyntax(
                 token.position_start,

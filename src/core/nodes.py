@@ -92,3 +92,15 @@ class FunctionDefinitionNode:
             self.position_start = self.body.position_start
 
         self.position_start = self.body.position_end
+
+class CallNode:
+    def __init__(self, node, argument_nodes) -> None:
+        self.node           = node
+        self.argument_nodes = argument_nodes
+
+        self.position_start = self.node.position_start
+
+        if len(self.argument_nodes) > 0:
+            self.position_end = self.argument_nodes[len(self.argument_nodes) - 1].position_end
+        else:
+            self.position_end = self.node.position_end
