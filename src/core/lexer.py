@@ -31,6 +31,8 @@ class Lexer:
 
 
             # PARSE OPERATORS
+            elif self.char == '"':
+                tokens.append(self.make_string())
 
             elif self.char == '+':
                 tokens.append(self.make_increment())
@@ -118,6 +120,38 @@ class Lexer:
         
         return Token('FLOAT', float(number), start, self.pos)
     
+    def make_string(self):
+        string = ''
+        start  = self.pos.copy()
+
+        escape_char = False
+        
+        self.next()
+
+        escape_chars = {
+            'n' : '\n',
+            't' : '\t',
+            'r' : '\r'
+        }
+
+        while self.char != None and (self.char != '"' or escape_char):
+            if escape_char:
+                string += escape_chars.get(self.char, self.char)
+                escape_char = False
+
+            else:
+                if self.char == '\\':
+                    escape_char = True
+
+                else:
+                    string += self.char
+
+            self.next()
+
+        self.next()
+
+        return Token('STRING', string, start, self.pos)
+
     def make_identifier(self):
         identifier: str = ''
         start           = self.pos.copy()

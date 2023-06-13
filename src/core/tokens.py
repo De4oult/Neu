@@ -1,6 +1,7 @@
 TokenTypes = {
     'INT'        : 'Int',
     'FLOAT'      : 'Float',
+    'STRING'     : 'String',
     'PLUS'       : 'Addition',
     'MINUS'      : 'Subtract',
     'STAR'       : 'Multiply',

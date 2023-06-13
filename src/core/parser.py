@@ -345,6 +345,12 @@ class Parser:
 
             return observer.success(NumberNode(token))
 
+        elif token.type == TokenTypes.get('STRING'):
+            observer.register_next()
+            self.next()
+
+            return observer.success(StringNode(token))
+
         elif token.type == TokenTypes.get('IDENTIFIER'):
             observer.register_next()
             self.next()

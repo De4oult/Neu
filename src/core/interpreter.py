@@ -1,4 +1,4 @@
-from core.types    import Number, Function
+from core.types    import Number, Function, String
 from core.observer import RuntimeResult
 from core.errors   import RuntimeError
 from core.tokens   import TokenTypes
@@ -18,6 +18,9 @@ class Interpreter:
     
     def visit_NumberNode(self, node, context):
         return RuntimeResult().success(Number(node.token.value).set_context(context).set_position(node.position_start, node.position_end))
+
+    def visit_StringNode(self, node, context):
+        return RuntimeResult().success(String(node.token.value).set_context(context).set_position(node.position_start, node.position_end))
 
     def visit_VariableAccessNode(self, node, context):
         observer = RuntimeResult()

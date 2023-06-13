@@ -11,6 +11,16 @@ class NumberNode:
     def __repr__(self) -> str:
         return f'{self.token}'
 
+class StringNode:
+    def __init__(self, token) -> None:
+        self.token = token
+
+        self.position_start = self.token.position_start
+        self.position_end   = self.token.position_end
+
+    def __repr__(self) -> str:
+        return f'{self.token}'
+
 class VariableAccessNode:
     def __init__(self, variable_name) -> None:
         self.variable_name = variable_name
