@@ -413,11 +413,62 @@ class Parser:
         )
 
     def power(self):
-        return self.binary_operation(self.atom, (
+        return self.binary_operation(self.call, (
                 TokenTypes.get('POW'), 
             ),
             self.factor
         )
+
+    def call(self):
+        observer = Result()
+        
+        atom = observer.register(self.atom())
+        if observer.error: return observer
+
+        if self.token.type == TokenTypes.get('LPAREN'):
+            observer.register_next()
+            self.next()
+
+            argument_nodes = []
+
+            if self.token.type == TokenTypes.get('RPAREN'):
+                observer.register_next()
+                self.next()
+
+            else:
+                argument_nodes.append(observer.register(self.expression()))
+                if observer.error:
+                    return observer.failure(
+                        InvalidSyntax(
+                            self.token.position_start,
+                            self.token.position_end,
+                            'keyword or expression expected'            
+                        )
+                    )
+                
+                while self.token.type == TokenTypes.get('COMMA'):
+                    observer.register_next()
+                    self.next()
+
+                    argument_nodes.append(observer.register(self.expression()))
+                    if observer.error: return observer
+
+                if self.token.type != TokenTypes.get('RPAREN'):
+                    return observer.failure(
+                        InvalidSyntax(
+                            self.token.position_start,
+                            self.token.position_end,
+                            '`,` or `)` expected'
+                        )
+                    )
+                
+                observer.register_next()
+                self.next()
+
+            return observer.success(CallNode(atom, argument_nodes))
+
+        return observer.success(atom)
+
 
     def factor(self):
         observer = Result()
