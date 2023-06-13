@@ -1,4 +1,8 @@
-from core.errors import RuntimeError
+from core.interpreter import Interpreter
+from core.observer    import RuntimeResult
+from core.errors      import RuntimeError
+from core.context     import Context
+from core.table       import Table
 
 class Value:
     def __init__(self) -> None:
@@ -183,3 +187,45 @@ class Number(Value):
     def __repr__(self) -> str:
         return str(self.value)
     
+
+class Function(Value):
+    def __init__(self, name, body, arguments_names) -> None:
+        super().__init__()
+        self.name            = name or '<anonymous>'
+        self.body            = body
+        self.arguments_names = arguments_names
+
+    def execute(self, arguments):
+        observer = RuntimeResult()
+
+        interpreter = Interpreter()
+
+        context = Context(self.name, self.context, self.position_start)
+        context.table = Table(context.parent.table)
+
+        if len(arguments) != len(self.arguments_names):
+            return observer.failure(
+                RuntimeError(
+                    self.position_start, 
+                    self.position_end,
+                    f'{len(arguments)} arguments passed, expected {len(self.arguments_names)}'
+                )
+            )
+        
+        for i in range(len(arguments)):
+            argument_name  = self.arguments_names[i]
+            argument_value = arguments[i]
+            
+            argument_value.set_context(context)
+            context.table.set(argument_name, argument_value)
+
+        value = observer.register(interpreter.visit(self.body, context))
+        if observer.error: return observer
+
+        return observer.success(value)
+    
+    def copy(self):
+        return Function(self.name, self.body, self.arguments_names).set_context(self.context).set_position(self.position_start, self.position_end)
+    
+    def __repr__(self) -> str:
+        return f'<function {self.name}>'
