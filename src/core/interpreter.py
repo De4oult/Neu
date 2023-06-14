@@ -124,7 +124,7 @@ class Interpreter:
     def visit_IfNode(self, node, context):
         observer = RuntimeResult()
 
-        for condition, expression in node.cases:
+        for condition, expression, return_null in node.cases:
             condition = observer.register(self.visit(condition, context))
             if observer.error: return observer
 
@@ -132,15 +132,16 @@ class Interpreter:
                 expression = observer.register(self.visit(expression, context))
                 if observer.error: return observer
 
-                return observer.success(expression)
+                return observer.success(Number.null if return_null else expression)
             
         if node.else_case:
-            else_value = observer.register(self.visit(node.else_case, context))
+            expression, return_null = node.else_case
+            else_value = observer.register(self.visit(expression, context))
             if observer.error: return observer
 
-            return observer.success(else_value)
+            return observer.success(Number.null if return_null else else_value)
     
-        return observer.success(None)
+        return observer.success(Number.null)
     
     def visit_ForNode(self, node, context):
         observer = RuntimeResult()
@@ -173,6 +174,7 @@ class Interpreter:
             if observer.error: return observer
 
         return observer.success(
+            Number.null if node.return_null else
             List(elements).set_context(context).set_position(node.position_start, node.position_end)
         )
     
@@ -191,6 +193,7 @@ class Interpreter:
             if observer.error: return observer
 
         return observer.success(
+            Number.null if node.return_null else
             List(elements).set_context(context).set_position(node.position_start, node.position_end)
         )
     
@@ -201,7 +204,7 @@ class Interpreter:
         body            = node.body
         arguments_names = [argument_name.value for argument_name in node.arguments_names]
 
-        function_value  = Function(function_name, body, arguments_names).set_context(context).set_position(node.position_start, node.position_end)
+        function_value  = Function(function_name, body, arguments_names, node.return_null).set_context(context).set_position(node.position_start, node.position_end)
 
         if node.variable_name:
             context.table.set(function_name, function_value)

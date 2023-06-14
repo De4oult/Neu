@@ -291,10 +291,11 @@ class BaseFunction(Value):
 
 
 class Function(BaseFunction):
-    def __init__(self, name, body, arguments_names) -> None:
+    def __init__(self, name, body, arguments_names, return_null) -> None:
         super().__init__(name)
         self.body            = body
         self.arguments_names = arguments_names
+        self.return_null     = return_null
 
     def execute(self, arguments, interpreter):
         observer = RuntimeResult()
@@ -307,10 +308,10 @@ class Function(BaseFunction):
         value = observer.register(interpreter.visit(self.body, context))
         if observer.error: return observer
 
-        return observer.success(value)
+        return observer.success(Number.null if self.return_null else value)
     
     def copy(self):
-        return Function(self.name, self.body, self.arguments_names).set_context(self.context).set_position(self.position_start, self.position_end)
+        return Function(self.name, self.body, self.arguments_names, self.return_null).set_context(self.context).set_position(self.position_start, self.position_end)
     
     def __repr__(self) -> str:
         return f'<function {self.name}>'

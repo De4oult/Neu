@@ -53,15 +53,15 @@ class Parser:
 
         return observer.success(IfNode(cases, else_case))
 
-    def elif_expression(self):
+    def elif_expression(self):  # if_expr_b
         return self.if_expression_cases('elif')
     
-    def elif_expression_others(self):
+    def elif_expression_others(self): # if_expr_b_or_c
         observer = Result()
         
         cases, else_case = [], None
 
-        if self.token.matches(TokenTypes.get('KEYWORD', 'elif')):
+        if self.token.matches(TokenTypes.get('KEYWORD'), 'elif'):
             all_cases = observer.register(self.elif_expression())
             if observer.error: return observer
 
@@ -73,7 +73,7 @@ class Parser:
 
         return observer.success((cases, else_case))
         
-    def else_expression(self):
+    def else_expression(self): # if_expr_c
         observer = Result()
 
         else_case = None
@@ -82,7 +82,22 @@ class Parser:
             observer.register_next()
             self.next()
 
-            if self.token.type == TokenTypes.get('NEWLINE'):
+            if self.token.type != TokenTypes.get('POINTER'):
+                return observer.failure(
+                    InvalidSyntax(
+                        self.token.position_start,
+                        self.token.position_end,
+                        'pointer `->` expected'
+                    )
+                )
+            
+            observer.register_next()
+            self.next()
+
+            if self.token.type == TokenTypes.get('LBRACE'):
+                observer.register_next()
+                self.next()
+
                 statements = observer.register(self.statements())
                 if observer.error: return observer
 
@@ -107,7 +122,7 @@ class Parser:
 
                 else_case = (expression, False)
 
-            return observer.success(else_case)
+        return observer.success(else_case)
 
     def if_expression_cases(self, case_keyword):
         observer = Result()
@@ -142,7 +157,7 @@ class Parser:
         observer.register_next()
         self.next()
 
-        if self.token.type == TokenTypes.get('NEWLINE'):
+        if self.token.type == TokenTypes.get('LBRACE'):
             observer.register_next()
             self.next()
 
@@ -156,7 +171,7 @@ class Parser:
                 self.next()
 
             else:
-                all_cases = observer.register_next(self.if_expression_or())
+                all_cases = observer.register(self.elif_expression_others())
                 if observer.error: return observer
 
                 new_cases, else_case = all_cases
@@ -169,7 +184,7 @@ class Parser:
 
             cases.append((condition, expression, False))
 
-            all_cases = observer.register(self.if_expression_or())
+            all_cases = observer.register(self.elif_expression_others())
             if observer.error: return observer
 
             new_cases, else_case = all_cases
@@ -251,10 +266,31 @@ class Parser:
         observer.register_next()
         self.next()
 
+        if self.token.type == TokenTypes.get('LBRACE'):
+            observer.register_next()
+            self.next()
+
+            body = observer.register(self.statements())
+            if observer.error: return observer
+
+            if not self.token.type == TokenTypes.get('RBRACE'):
+                return observer.failure(
+                    InvalidSyntax(
+                        self.token.position_start,
+                        self.token.position_end,
+                        '`}` expected'
+                    )
+                )
+
+            observer.register_next()
+            self.next()
+
+            return observer.success(ForNode(variable_name, start_value, end_value, step_value, body, True))
+        
         body = observer.register(self.expression())
         if observer.error: return observer
 
-        return observer.success(ForNode(variable_name, start_value, end_value, step_value, body))
+        return observer.success(ForNode(variable_name, start_value, end_value, step_value, body, False))
             
     def loop_expression(self):
         observer = Result()
@@ -286,10 +322,31 @@ class Parser:
         observer.register_next()
         self.next()
 
+        if self.token.type == TokenTypes.get('LBRACE'):
+            observer.register_next()
+            self.next()
+
+            body = observer.register(self.statements())
+            if observer.error: return observer
+
+            if not self.token.type == TokenTypes.get('RBRACE'):
+                return observer.failure(
+                    InvalidSyntax(
+                        self.token.position_start,
+                        self.token.position_end,
+                        '`}` expected'
+                    )
+                )
+            
+            observer.register_next()
+            self.next()
+
+            return observer.success(LoopNode(condition, body, True))
+
         body = observer.register(self.expression())
         if observer.error: return observer
 
-        return observer.success(LoopNode(condition, body))     
+        return observer.success(LoopNode(condition, body, False)) 
 
     def function_definition(self):
         observer = Result()
@@ -389,20 +446,54 @@ class Parser:
                 InvalidSyntax(
                     self.token.position_start,
                     self.token.position_end,
-                    'pointer expected'
+                    'pointer `->` expected'
                 )
             )
         
         observer.register_next()
         self.next()
 
-        node = observer.register(self.expression())
+        if self.token.type == TokenTypes.get('LBRACE'):
+            observer.register_next()
+            self.next()
+
+            body = observer.register(self.statements())
+            if observer.error: return observer
+
+            observer.register_next()
+            self.next()
+
+            if self.token.type != TokenTypes.get('RBRACE'):
+                return observer.failure(
+                    InvalidSyntax(
+                        self.token.position_start,
+                        self.token.position_end,
+                        '`}` expected'
+                    )
+                )
+        
+            observer.register_next()
+            self.next()
+
+            return observer.success(FunctionDefinitionNode(
+                    function_name,
+                    arguments_names,
+                    body,
+                    True
+                )
+            )
+        
+        body = observer.register(self.expression())
         if observer.error: return observer
+
+        observer.register_next()
+        self.next()
 
         return observer.success(FunctionDefinitionNode(
                 function_name,
                 arguments_names,
-                node
+                body,
+                False
             )
         )
     

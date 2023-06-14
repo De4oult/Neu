@@ -75,29 +75,32 @@ class IfNode:
         self.position_end   = (self.else_case or self.cases[len(self.cases) - 1][0]).position_end
 
 class ForNode:
-    def __init__(self, variable_name, start_value, end_value, step_value, body) -> None:
+    def __init__(self, variable_name, start_value, end_value, step_value, body, return_null) -> None:
         self.variable_name = variable_name
         self.start_value   = start_value
         self.end_value     = end_value
         self.step_value    = step_value
         self.body          = body
+        self.return_null   = return_null
 
         self.position_start = self.variable_name.position_start
         self.position_end   = self.body.position_end
 
 class LoopNode:
-    def __init__(self, condition, body) -> None:
-        self.condition = condition
-        self.body      = body
+    def __init__(self, condition, body, return_null) -> None:
+        self.condition   = condition
+        self.body        = body
+        self.return_null = return_null
 
         self.position_start = self.condition.position_start
         self.position_end   = self.body.position_end 
 
 class FunctionDefinitionNode:
-    def __init__(self, variable_name, arguments_names, body) -> None:
+    def __init__(self, variable_name, arguments_names, body, return_null) -> None:
         self.variable_name   = variable_name
         self.arguments_names = arguments_names
         self.body            = body
+        self.return_null     = return_null
 
         if self.variable_name:
             self.position_start = self.variable_name.position_start
