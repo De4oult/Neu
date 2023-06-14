@@ -27,6 +27,9 @@ TokenTypes = {
     'COMMA'      : 'Comma',
     'LSQUARE'    : 'LSquare',
     'RSQUARE'    : 'RSquare',
+    'LBRACE'     : 'LBrace',
+    'RBRACE'     : 'RBrace',
+    'NEWLINE'    : 'NewLine',
     'EOF'        : 'EndOfFile'
 }
 

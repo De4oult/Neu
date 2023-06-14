@@ -29,6 +29,9 @@ class Lexer:
             elif self.char in ' \t':
                 self.next()
 
+            elif self.char in ';\n':
+                tokens.append(Token('NEWLINE', start = self.pos))
+                self.next()
 
             # PARSE OPERATORS
             elif self.char == '"':
