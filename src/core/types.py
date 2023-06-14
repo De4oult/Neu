@@ -189,6 +189,10 @@ class Number(Value):
     def __repr__(self) -> str:
         return str(self.value)
     
+Number.null  = Number(0)
+Number.false = Number(0)
+Number.true  = Number(1)
+
 class String(Value):
     def __init__(self, value) -> None:
         super().__init__()

@@ -6,9 +6,9 @@ from core.lexer       import Lexer
 from core.table       import Table
 
 table = Table()
-table.set('null',  Number(0))
-table.set('false', Number(0))
-table.set('true',  Number(1))
+table.set('null',  Number.null)
+table.set('true',  Number.true)
+table.set('false', Number.false)
 
 def execute(filename: str, content: str) -> tuple[list[str], str]:
 
