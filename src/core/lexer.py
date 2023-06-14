@@ -71,6 +71,14 @@ class Lexer:
                 tokens.append(Token('RSQUARE', start = self.pos))
                 self.next()
 
+            elif self.char == '{':
+                tokens.append(Token('LBRACE', start = self.pos))
+                self.next()
+            
+            elif self.char == '}':
+                tokens.append(Token('RBRACE', start = self.pos))
+                self.next()
+
             elif self.char == ',':
                 tokens.append(Token('COMMA', start = self.pos))
                 self.next()
