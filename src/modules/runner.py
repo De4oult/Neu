@@ -1,14 +1,24 @@
+from core.types       import Number, BuiltInFunction
 from core.interpreter import Interpreter
 from core.context     import Context
 from core.parser      import Parser
-from core.types       import Number
 from core.lexer       import Lexer
 from core.table       import Table
 
 table = Table()
+# numbers
 table.set('null',  Number.null)
 table.set('true',  Number.true)
 table.set('false', Number.false)
+
+# functions
+table.set('disp',     BuiltInFunction.disp)
+table.set('displine', BuiltInFunction.displine)
+table.set('read',     BuiltInFunction.read)
+table.set('clear',    BuiltInFunction.clear)
+table.set('typeof',   BuiltInFunction.typeof)
+table.set('append',   BuiltInFunction.append)
+table.set('pop',      BuiltInFunction.pop)
 
 def execute(filename: str, content: str) -> tuple[list[str], str]:
 

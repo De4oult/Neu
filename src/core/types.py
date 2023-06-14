@@ -3,6 +3,8 @@ from core.errors      import RuntimeError
 from core.context     import Context
 from core.table       import Table
 
+import os
+
 class Value:
     def __init__(self) -> None:
         self.set_position()
@@ -239,25 +241,26 @@ class List(Value):
         return new_array, None
 
     def copy(self):
-        return List(self.elements[:]).set_position(self.position_start, self.position_end).set_context(self.context)
+        return List(self.elements).set_position(self.position_start, self.position_end).set_context(self.context)
     
     def __repr__(self) -> str:
         return f'[{", ".join([str(element) for element in self.elements])}]'
 
-class Function(Value):
-    def __init__(self, name, body, arguments_names) -> None:
+class BaseFunction(Value):
+    def __init__(self, name) -> None:
         super().__init__()
-        self.name            = name or '<anonymous>'
-        self.body            = body
-        self.arguments_names = arguments_names
+        self.name = name or '<anonyomus>'
 
-    def execute(self, arguments, interpreter):
-        observer = RuntimeResult()
-
+    def generate_context(self):
         context = Context(self.name, self.context, self.position_start)
         context.table = Table(context.parent.table)
 
-        if len(arguments) != len(self.arguments_names):
+        return context
+
+    def check_arguments(self, arguments_names, arguments):
+        observer = RuntimeResult()
+
+        if len(arguments) != len(arguments_names):
             return observer.failure(
                 RuntimeError(
                     self.position_start, 
@@ -266,12 +269,40 @@ class Function(Value):
                 )
             )
         
+        return observer.success(None)
+    
+    def populate_arguments(self, arguments_names, arguments, context):
         for i in range(len(arguments)):
-            argument_name  = self.arguments_names[i]
+            argument_name  = arguments_names[i]
             argument_value = arguments[i]
-            
+                
             argument_value.set_context(context)
             context.table.set(argument_name, argument_value)
+
+    def validate_arguments(self, arguments_names, arguments, context):
+        observer = RuntimeResult()
+
+        observer.register(self.check_arguments(arguments_names, arguments))
+        if observer.error: return observer
+
+        self.populate_arguments(arguments_names, arguments, context)
+
+        return observer.success(None)
+
+
+class Function(BaseFunction):
+    def __init__(self, name, body, arguments_names) -> None:
+        super().__init__(name)
+        self.body            = body
+        self.arguments_names = arguments_names
+
+    def execute(self, arguments, interpreter):
+        observer = RuntimeResult()
+
+        context = self.generate_context()
+        
+        observer.register(self.validate_arguments(self.arguments_names, arguments, context))
+        if observer.error: return observer
 
         value = observer.register(interpreter.visit(self.body, context))
         if observer.error: return observer
@@ -284,3 +315,130 @@ class Function(Value):
     def __repr__(self) -> str:
         return f'<function {self.name}>'
     
+class BuiltInFunction(BaseFunction):
+    def __init__(self, name) -> None:
+        super().__init__(name)
+
+    def execute(self, arguments, interpreter = None):
+        observer = RuntimeResult()
+
+        context = self.generate_context()
+
+        method = getattr(self, f'execute_{self.name}', self.no_visit)
+
+        observer.register(self.validate_arguments(method.arguments_names, arguments, context))
+        if observer.error: return observer
+
+        return_value = observer.register(method(context))
+        if observer.error: return observer
+
+        return observer.success(return_value)
+    
+    def no_visit(self, node, context):
+        raise Exception(f'execute_{self.name} method is not defined')
+    
+    def copy(self):
+        return BuiltInFunction(self.name).set_context(self.context).set_position(self.position_start, self.position_end)
+    
+    def __repr__(self) -> str:
+        return f'<built-in function {self.name}>'
+    
+    def execute_disp(self, context):
+        print(str(context.table.get('value')), end = '')
+        
+        return RuntimeResult().success(Number.null)
+    
+    execute_disp.arguments_names = ['value']
+    
+    def execute_displine(self, context):
+        print(str(context.table.get('value')))
+        
+        return RuntimeResult().success(Number.null)
+    
+    execute_displine.arguments_names = ['value']
+
+    def execute_read(self, context):
+        text = input()
+
+        return RuntimeResult().success(String(text))
+    
+    execute_read.arguments_names = []
+
+    def execute_clear(self, context):
+        os.system('cls' if os.name == 'nt' else 'clear')
+        return RuntimeResult().success(Number.null)
+
+    execute_clear.arguments_names = []
+
+    def execute_typeof(self, context):
+        return RuntimeResult().success(String(type(context.table.get('value'))))
+    
+    execute_typeof.arguments_names = ['value']
+
+    def execute_append(self, context):
+        array = context.table.get('list')
+        value = context.table.get('value')
+
+        if not isinstance(array, List):
+            return RuntimeResult().failure(
+                RuntimeError(
+                    self.position_start,
+                    self.position_end,
+                    'first argument must be list',
+                    context
+                )
+            )
+        
+        array.elements.append(value)
+
+        return RuntimeResult().success(Number.null)
+
+    execute_append.arguments_names = ['list', 'value']
+
+    def execute_pop(self, context):
+        array = context.table.get('list')
+        index = context.table.get('index')
+
+        if not isinstance(array, List):
+            return RuntimeResult().failure(
+                RuntimeError(
+                    self.position_start,
+                    self.position_end,
+                    'first argument must be list',
+                    context
+                )
+            )
+        
+        if not isinstance(index, Number):
+            return RuntimeResult().failure(
+                RuntimeError(
+                    self.position_start,
+                    self.position_end,
+                    'second argument must be number',
+                    context
+                )
+            )
+        
+        try:
+            element = array.elements.pop(index.value)
+        except:
+            return RuntimeResult().failure(
+                RuntimeError(
+                    self.position_start,
+                    self.position_end,
+                    'element at this index could not be removed',
+                    context
+                )
+            )
+
+        return RuntimeResult().success(element)
+
+    execute_pop.arguments_names = ['list', 'index']
+
+BuiltInFunction.disp     = BuiltInFunction("disp")
+BuiltInFunction.displine = BuiltInFunction("displine")
+BuiltInFunction.read     = BuiltInFunction("read")
+BuiltInFunction.clear    = BuiltInFunction("clear")
+BuiltInFunction.typeof   = BuiltInFunction("typeof")
+BuiltInFunction.append   = BuiltInFunction("append")
+BuiltInFunction.pop      = BuiltInFunction("pop")

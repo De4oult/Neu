@@ -51,7 +51,7 @@ class Interpreter:
                 )
             )
         
-        value = value.copy().set_position(node.position_start, node.position_end)
+        value = value.copy().set_position(node.position_start, node.position_end).set_context(context)
         return observer.success(value)
 
     def visit_VariableAssignmentNode(self, node, context):
@@ -224,5 +224,7 @@ class Interpreter:
 
         return_value = observer.register(value.execute(arguments, Interpreter()))
         if observer.error: return observer
+
+        return_value = return_value.copy().set_position(node.position_start, node.position_end).set_context(context)        
 
         return observer.success(return_value)
