@@ -45,15 +45,82 @@ class Parser:
 
     def if_expression(self):
         observer  = Result()
+
+        all_cases = observer.register(self.if_expression_cases('if'))
+        if observer.error: return observer
+
+        cases, else_case = all_cases
+
+        return observer.success(IfNode(cases, else_case))
+
+    def elif_expression(self):
+        return self.if_expression_cases('elif')
+    
+    def elif_expression_others(self):
+        observer = Result()
+        
+        cases, else_case = [], None
+
+        if self.token.matches(TokenTypes.get('KEYWORD', 'elif')):
+            all_cases = observer.register(self.elif_expression())
+            if observer.error: return observer
+
+            cases, else_case = all_cases
+
+        else:
+            else_case = observer.register(self.else_expression())
+            if observer.error: return observer
+
+        return observer.success((cases, else_case))
+        
+    def else_expression(self):
+        observer = Result()
+
+        else_case = None
+
+        if self.token.matches(TokenTypes.get('KEYWORD'), 'else'):
+            observer.register_next()
+            self.next()
+
+            if self.token.type == TokenTypes.get('NEWLINE'):
+                statements = observer.register(self.statements())
+                if observer.error: return observer
+
+                else_case = (statements, True)
+
+                if self.token.type == TokenTypes.get('RBRACE'):
+                    observer.register_next()
+                    self.next()
+
+                else:
+                    return observer.failure(
+                        InvalidSyntax(
+                            self.token.position_start,
+                            self.token.position_end,
+                            '`}` expected'
+                        )
+                    )
+                
+            else:
+                expression = observer.register(self.expression())
+                if observer.error: return observer
+
+                else_case = (expression, False)
+
+            return observer.success(else_case)
+
+    def if_expression_cases(self, case_keyword):
+        observer = Result()
+
         cases     = []
         else_case = None
 
-        if not self.token.matches(TokenTypes.get('KEYWORD'), 'if'):
+        if not self.token.matches(TokenTypes.get('KEYWORD'), case_keyword):
             return observer.failure(
                 InvalidSyntax(
                     self.token.position_start,
                     self.token.position_end,
-                    '`if` expected'
+                    f'`{case_keyword}` expected'
                 )
             )
         
@@ -75,43 +142,41 @@ class Parser:
         observer.register_next()
         self.next()
 
-        expression = observer.register(self.expression())
-        if observer.error: return observer
-        
-        cases.append((condition, expression))
-
-        while self.token.matches(TokenTypes.get('KEYWORD'), 'elif'):
+        if self.token.type == TokenTypes.get('NEWLINE'):
             observer.register_next()
             self.next()
 
-            condition = observer.register(self.expression())
+            statements = observer.register(self.statements())
             if observer.error: return observer
 
-            if not self.token.type == TokenTypes.get('POINTER'):
-                return observer.failure(
-                    InvalidSyntax(
-                        self.token.position_start,
-                        self.token.position_end,
-                        'pointer `->` excpected'
-                    )
-                )
-            
-            observer.register_next()
-            self.next()
+            cases.append((condition, statements, True))
 
+            if self.token.type == TokenTypes.get('RBRACE'):
+                observer.register_next()
+                self.next()
+
+            else:
+                all_cases = observer.register_next(self.if_expression_or())
+                if observer.error: return observer
+
+                new_cases, else_case = all_cases
+
+                cases.extend(new_cases)
+
+        else:
             expression = observer.register(self.expression())
             if observer.error: return observer
 
-            cases.append((condition, expression))
+            cases.append((condition, expression, False))
 
-        if self.token.matches(TokenTypes.get('KEYWORD'), 'else'):
-            observer.register_next()
-            self.next()
-
-            else_case = observer.register(self.expression())
+            all_cases = observer.register(self.if_expression_or())
             if observer.error: return observer
 
-        return observer.success(IfNode(cases, else_case))
+            new_cases, else_case = all_cases
+            cases.extend(new_cases)
+
+        return observer.success((cases, else_case))
+
 
     def for_expression(self):
         observer = Result()
@@ -703,7 +768,7 @@ class Parser:
                     InvalidSyntax(
                         self.token.position_start, 
                         self.token.position_end,
-                        'assignment operator expected'
+                        'pointer `<-` expected'
                     )
                 )
             
