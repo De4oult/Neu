@@ -23,7 +23,10 @@ TokenTypes = {
     'KEYWORD'    : 'Keyword',
     'IDENTIFIER' : 'Identifier',
     'POINTER'    : 'Pointer',
+    'LPOINTER'   : 'LPointer',
     'COMMA'      : 'Comma',
+    'LSQUARE'    : 'LSquare',
+    'RSQUARE'    : 'RSquare',
     'EOF'        : 'EndOfFile'
 }
 

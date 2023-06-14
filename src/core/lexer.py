@@ -60,6 +60,14 @@ class Lexer:
                 tokens.append(Token('RPAREN', start = self.pos))
                 self.next()
 
+            elif self.char == '[':
+                tokens.append(Token('LSQUARE', start = self.pos))
+                self.next()
+            
+            elif self.char == ']':
+                tokens.append(Token('RSQUARE', start = self.pos))
+                self.next()
+
             elif self.char == ',':
                 tokens.append(Token('COMMA', start = self.pos))
                 self.next()
@@ -200,6 +208,10 @@ class Lexer:
         if self.char == '=':
             self.next()
             token_type = 'LTE'
+
+        elif self.char == '-':
+            self.next()
+            token_type = 'LPOINTER'
 
         return Token(token_type, start = start, end = self.pos)
 

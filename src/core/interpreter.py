@@ -1,4 +1,4 @@
-from core.types    import Number, Function, String
+from core.types    import Number, Function, String, List
 from core.observer import RuntimeResult
 from core.errors   import RuntimeError
 from core.tokens   import TokenTypes
@@ -21,6 +21,19 @@ class Interpreter:
 
     def visit_StringNode(self, node, context):
         return RuntimeResult().success(String(node.token.value).set_context(context).set_position(node.position_start, node.position_end))
+
+    def visit_ListNode(self, node, context):
+        observer = RuntimeResult()
+        
+        elements = []
+
+        for element in node.elements:
+            elements.append(observer.register(self.visit(element, context)))
+            if observer.error: return observer
+
+        return observer.success(
+            List(elements).set_context(context).set_position(node.position_start, node.position_end)
+        )
 
     def visit_VariableAccessNode(self, node, context):
         observer = RuntimeResult()
@@ -75,6 +88,8 @@ class Interpreter:
         elif node.operation.type == TokenTypes.get('GTE'):             result, error = left.comparison_gte(right)
         elif node.operation.matches(TokenTypes.get('KEYWORD'), 'and'): result, error = left.comparison_and(right)
         elif node.operation.matches(TokenTypes.get('KEYWORD'), 'or' ): result, error = left.comparison_or(right)
+        # SERVICE
+        elif node.operation.type == TokenTypes.get('LPOINTER'): result, error = left.push(right)
 
 
         if error: return observer.failure(error)
@@ -130,6 +145,8 @@ class Interpreter:
     def visit_ForNode(self, node, context):
         observer = RuntimeResult()
 
+        elements = []
+
         start_value = observer.register(self.visit(node.start_value, context))
         if observer.error: return observer
 
@@ -152,13 +169,17 @@ class Interpreter:
             context.table.set(node.variable_name.value, Number(start_value.value))
             start_value.value += step_value.value
 
-            observer.register(self.visit(node.body, context))
+            elements.append(observer.register(self.visit(node.body, context)))
             if observer.error: return observer
 
-        return observer.success(None)
+        return observer.success(
+            List(elements).set_context(context).set_position(node.position_start, node.position_end)
+        )
     
     def visit_LoopNode(self, node, context):
         observer = RuntimeResult()
+
+        elements = []
 
         while True:
             condition = observer.register(self.visit(node.condition, context))
@@ -166,10 +187,12 @@ class Interpreter:
 
             if not condition.is_true(): break
 
-            observer.register(self.visit(node.body, context))
+            elements.append(observer.register(self.visit(node.body, context)))
             if observer.error: return observer
 
-        return observer.success(None)
+        return observer.success(
+            List(elements).set_context(context).set_position(node.position_start, node.position_end)
+        )
     
     def visit_FunctionDefinitionNode(self, node, context):
         observer = RuntimeResult()

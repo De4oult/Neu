@@ -68,6 +68,9 @@ class Value:
     def decrement(self):
         return None, self.illegal_operation()
     
+    def push(self, other):
+        return None, self.illegal_operation(other)
+    
     def copy(self):
         raise Exception('No copy method defined')
 
@@ -208,6 +211,35 @@ class String(Value):
     def __repr__(self) -> str:
         return f'"{self.value}"'
 
+class List(Value):
+    def __init__(self, elements) -> None:
+        super().__init__()
+        self.elements = elements
+
+    def addition(self, other) -> tuple:
+        new_array = self.copy()
+        if isinstance(other, List):
+            for element in other.elements:
+                new_array.elements.append(element)
+
+            return new_array, None
+        
+        new_array.elements.append(other)
+        
+        return new_array, None
+    
+    def push(self, other) -> tuple:
+        new_array = self.copy()
+        new_array.elements.append(other)
+        
+        return new_array, None
+
+    def copy(self):
+        return List(self.elements[:]).set_position(self.position_start, self.position_end).set_context(self.context)
+    
+    def __repr__(self) -> str:
+        return f'[{", ".join([str(element) for element in self.elements])}]'
+
 class Function(Value):
     def __init__(self, name, body, arguments_names) -> None:
         super().__init__()
@@ -247,3 +279,4 @@ class Function(Value):
     
     def __repr__(self) -> str:
         return f'<function {self.name}>'
+    

@@ -330,6 +330,66 @@ class Parser:
                 node
             )
         )
+    
+    def list_expression(self):
+        observer = Result()
+
+        elements = []
+        start    = self.token.position_start.copy()
+
+        if self.token.type != TokenTypes.get('LSQUARE'):
+            return observer.failure(
+                InvalidSyntax(
+                    self.token.position_start,
+                    self.token.position_end,
+                    '`[` expected'
+                )
+            )
+    
+        observer.register_next()
+        self.next()
+
+        if self.token.type == TokenTypes.get('RSQUARE'):
+            observer.register_next()
+            self.next()
+
+        else:
+            elements.append(observer.register(self.expression()))
+            if observer.error:
+                return observer.failure(
+                    InvalidSyntax(
+                        self.token.position_start,
+                        self.token.position_end,
+                        'expression expected'
+                    )
+                )
+            
+            while self.token.type == TokenTypes.get('COMMA'):
+                observer.register_next()
+                self.next()
+
+                elements.append(observer.register(self.expression()))
+                if observer.error: return observer
+
+            if self.token.type != TokenTypes.get('RSQUARE'):
+                return observer.failure(
+                    InvalidSyntax(
+                        self.token.position_start,
+                        self.token.position_end,
+                        '`,` or `]` expected'
+                    )
+                )
+            
+            observer.register_next()
+            self.next()
+
+        return observer.success(
+            ListNode(
+                elements,
+                start,
+                self.token.position_end.copy()
+            )
+        )
 
     def atom(self):
         observer = Result()
@@ -385,7 +445,13 @@ class Parser:
                         '`)` expected'
                     )
                 )
-            
+
+        elif token.type == TokenTypes.get('LSQUARE'):
+            list_expression = observer.register(self.list_expression())
+            if observer.error: return observer
+
+            return observer.success(list_expression)
+        
         elif token.matches(TokenTypes.get('KEYWORD'), 'if'):
             if_expression = observer.register(self.if_expression())
             if observer.error: return observer
@@ -536,7 +602,8 @@ class Parser:
                     TokenTypes.get('LT'),
                     TokenTypes.get('GT'),
                     TokenTypes.get('LTE'),
-                    TokenTypes.get('GTE')
+                    TokenTypes.get('GTE'),
+                    TokenTypes.get('LPOINTER')
                 )
             )
         )
@@ -573,7 +640,7 @@ class Parser:
             observer.register_next()
             self.next()
 
-            if self.token.type != TokenTypes.get('EQ'):  # maybe change it later
+            if self.token.type != TokenTypes.get('LPOINTER'):  # maybe change it later
                 return observer.failure(
                     InvalidSyntax(
                         self.token.position_start, 

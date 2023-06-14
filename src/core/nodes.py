@@ -20,6 +20,13 @@ class StringNode:
 
     def __repr__(self) -> str:
         return f'{self.token}'
+    
+class ListNode:
+    def __init__(self, elements, start, end) -> None:
+        self.elements = elements
+
+        self.position_start = start
+        self.position_end   = end
 
 class VariableAccessNode:
     def __init__(self, variable_name) -> None:
