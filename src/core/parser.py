@@ -17,8 +17,18 @@ class Parser:
         
         return self.token
     
+    def reverse(self, amount = 1):
+        self.token_index -= amount
+        self.update_token()
+
+        return self.token
+    
+    def update_token(self):
+        if self.token_index >= 0 and self.token_index < len(self.tokens):
+            self.token = self.tokens[self.token_index]
+    
     def parse(self):
-        observer = self.expression()
+        observer = self.statements()
 
         if not observer.error and self.token.type != TokenTypes.get('EOF'):
             return observer.failure(
@@ -618,6 +628,54 @@ class Parser:
             )
         
         return observer.success(node)
+
+    def statements(self):
+        observer = Result()
+
+        statements = []
+        start      = self.token.position_start.copy()
+
+        while self.token.type == TokenTypes.get('NEWLINE'):
+            observer.register_next()
+            self.next()
+
+        statement = observer.register(self.expression())
+        if observer.error: return observer
+
+        statements.append(statement)
+
+        more_statements = True
+
+        while True:
+            newlines = 0
+            while self.token.type == TokenTypes.get('NEWLINE'):
+                observer.register_next()
+                self.next()
+
+                newlines += 1
+            
+            if newlines == 0:
+                more_statements = False
+
+            if not more_statements: break
+
+            statement = observer.try_register(self.expression())
+            if not statement: 
+                self.reverse(observer.reverse_count)
+                more_statements = False
+
+                continue
+
+            statements.append(statement)
+
+        return observer.success(
+            ListNode(
+                statements,
+                start,
+                self.token.position_end.copy()
+            )
+        )
+
 
     def expression(self):
         observer = Result()

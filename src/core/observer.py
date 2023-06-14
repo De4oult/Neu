@@ -1,17 +1,29 @@
 class Result:
     def __init__(self) -> None:
-        self.error      = None
-        self.node       = None
-        self.next_count = 0
+        self.error         = None
+        self.node          = None
+        self.last_next     = 0
+        self.next_count    = 0
+        self.reverse_count = 0
 
     def register_next(self):
+        self.last_next   = 1
         self.next_count += 1
 
     def register(self, result):
+        self.last_next   = self.next_count
         self.next_count += result.next_count
+        
         if result.error: self.error = result.error
         
         return result.node
+
+    def try_register(self, result):
+        if result.error:
+            self.reverse_count = result.next_count
+            return None
+        
+        return self.register(result)
 
     def success(self, node):
         self.node = node
