@@ -37,7 +37,7 @@ def execute(filename: str, content: str) -> tuple[list[str], str]:
     parser = Parser(tokens)
     ast    = parser.parse()
 
-    print(tokens)
+    #print(tokens)
 
     if ast.error: return None, ast.error
 

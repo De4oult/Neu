@@ -1,1 +1,22 @@
-if (a == 5) -> {wait(1); displine(true);}; else -> {wait(1); displine("a == 7");}
+if (a == 5) -> {wait(1); displine(true);} else -> {wait(1); displine("a == 7");}
+
+save a <- if 5 == 6 -> "TRUE" else -> "FASLE"
+save a <- if 5 == 6 -> {wait(1); "TRUE"} else -> {"FALSE"}
+
+if 5 == 6 -> {wait(1); displine("TRUE")} else -> {wait(1); displine("FALSE")}
+
+
+if 5 == 6 -> {
+    wait(1); 
+    displine("TRUE");
+} 
+elif 5 == 5 -> {
+    wait(1); 
+    displine("TRUE");
+} 
+else -> {
+    wait(1); 
+    displine("FALSE");
+}
+
+if 4 == 5 -> {wait(1); displine(0)} elif 6 != 5 -> {wait(1); displine(1)} elif 7 == 5 -> {wait(1); displine(2)} else -> {wait(1); displine(3)}

@@ -51,8 +51,6 @@ class Parser:
 
         cases, else_case = all_cases
 
-        print(else_case)
-
         return observer.success(IfNode(cases, else_case))
 
     def elif_expression(self):  # if_expr_b
@@ -62,6 +60,9 @@ class Parser:
         observer = Result()
         
         cases, else_case = [], None
+
+        observer.register_next()
+        self.next()
 
         if self.token.matches(TokenTypes.get('KEYWORD'), 'elif'):
             all_cases = observer.register(self.elif_expression())
@@ -104,15 +105,8 @@ class Parser:
                 if observer.error: return observer
 
                 else_case = (statements, True)
-                
-                observer.register_next()
-                self.next()
 
-                if self.token.type == TokenTypes.get('RBRACE'):
-                    observer.register_next()
-                    self.next()
-
-                else:
+                if self.token.type != TokenTypes.get('RBRACE'):
                     return observer.failure(
                         InvalidSyntax(
                             self.token.position_start,
@@ -158,7 +152,7 @@ class Parser:
                     'pointer `->` expected'
                 )
             )
-        
+
         observer.register_next()
         self.next()
 
