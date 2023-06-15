@@ -798,7 +798,7 @@ class Parser:
             observer.register_next()
             self.next()
 
-        statement = observer.register(self.expression())
+        statement = observer.register(self.statement())
         if observer.error: return observer
 
         statements.append(statement)
@@ -845,8 +845,7 @@ class Parser:
             self.next()
 
             expression = observer.try_register(self.expression())
-            if not expression:
-                self.reverse(observer.reverse_count)
+            if not expression: self.reverse(observer.reverse_count)
 
             return observer.success(
                 ReturnNode(
@@ -863,7 +862,7 @@ class Parser:
             return observer.success(
                 ContinueNode(
                     start,
-                    self.token.position_end
+                    self.token.position_start.copy()
                 )
             )
         
@@ -874,7 +873,7 @@ class Parser:
             return observer.success(
                 BreakNode(
                     start,
-                    self.token.position_end
+                    self.token.position_start.copy()
                 )
             )
 

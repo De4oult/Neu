@@ -126,18 +126,18 @@ class Interpreter:
 
         for condition, expression, return_null in node.cases:
             condition = observer.register(self.visit(condition, context))
-            if observer.error: return observer
+            if observer.should_return(): return observer
 
             if condition.is_true():
                 expression = observer.register(self.visit(expression, context))
-                if observer.error: return observer
+                if observer.should_return(): return observer
 
                 return observer.success(Number.null if return_null else expression)
             
         if node.else_case:
             expression, return_null = node.else_case
             else_value = observer.register(self.visit(expression, context))
-            if observer.error: return observer
+            if observer.should_return(): return observer
 
             return observer.success(Number.null if return_null else else_value)
     
@@ -161,14 +161,16 @@ class Interpreter:
         else:
             step_value = Number(1)
 
+        svalue = start_value.value
+
         if step_value.value >= 0:
-            condition = lambda: start_value.value < end_value.value
+            condition = lambda: svalue < end_value.value
         else:
-            condition = lambda: start_value.value > end_value.value
+            condition = lambda: svalue > end_value.value
 
         while condition():
-            context.table.set(node.variable_name.value, Number(start_value.value))
-            start_value.value += step_value.value
+            context.table.set(node.variable_name.value, Number(svalue))
+            svalue += step_value.value
 
             value = observer.register(self.visit(node.body, context))
             if observer.should_return() and observer.should_continue == False and observer.loop_break == False: return observer
@@ -190,7 +192,7 @@ class Interpreter:
 
         while True:
             condition = observer.register(self.visit(node.condition, context))
-            if observer.error: return observer
+            if observer.should_return(): return observer
 
             if not condition.is_true(): break
 
@@ -213,7 +215,6 @@ class Interpreter:
         function_name   = node.variable_name.value if node.variable_name else None
         body            = node.body
         arguments_names = [argument_name.value for argument_name in node.arguments_names]
-
         function_value  = Function(function_name, body, arguments_names, node.auto_return).set_context(context).set_position(node.position_start, node.position_end)
 
         if node.variable_name:
