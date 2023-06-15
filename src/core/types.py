@@ -3,6 +3,7 @@ from core.errors      import RuntimeError
 from core.context     import Context
 from core.table       import Table
 
+import time
 import os
 
 class Value:
@@ -265,7 +266,8 @@ class BaseFunction(Value):
                 RuntimeError(
                     self.position_start, 
                     self.position_end,
-                    f'{len(arguments)} arguments passed, expected {len(self.arguments_names)}'
+                    f'{len(arguments)} arguments passed, expected {len(self.arguments_names)}',
+                    self.context
                 )
             )
         
@@ -436,6 +438,15 @@ class BuiltInFunction(BaseFunction):
 
     execute_pop.arguments_names = ['list', 'index']
 
+    def execute_wait(self, context):
+        value = context.table.get('value')
+
+        time.sleep(int(value.value))
+
+        return RuntimeResult().success(Number.null)
+
+    execute_wait.arguments_names = ['value']
+
 BuiltInFunction.disp     = BuiltInFunction("disp")
 BuiltInFunction.displine = BuiltInFunction("displine")
 BuiltInFunction.read     = BuiltInFunction("read")
@@ -443,3 +454,4 @@ BuiltInFunction.clear    = BuiltInFunction("clear")
 BuiltInFunction.typeof   = BuiltInFunction("typeof")
 BuiltInFunction.append   = BuiltInFunction("append")
 BuiltInFunction.pop      = BuiltInFunction("pop")
+BuiltInFunction.wait     = BuiltInFunction("wait")

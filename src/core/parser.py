@@ -51,6 +51,8 @@ class Parser:
 
         cases, else_case = all_cases
 
+        print(else_case)
+
         return observer.success(IfNode(cases, else_case))
 
     def elif_expression(self):  # if_expr_b
@@ -90,7 +92,7 @@ class Parser:
                         'pointer `->` expected'
                     )
                 )
-            
+
             observer.register_next()
             self.next()
 
@@ -102,6 +104,9 @@ class Parser:
                 if observer.error: return observer
 
                 else_case = (statements, True)
+                
+                observer.register_next()
+                self.next()
 
                 if self.token.type == TokenTypes.get('RBRACE'):
                     observer.register_next()
@@ -145,12 +150,12 @@ class Parser:
         condition = observer.register(self.expression())
         if observer.error: return observer
 
-        if not self.token.type == TokenTypes.get('POINTER'):
+        if self.token.type != TokenTypes.get('POINTER'):
             return observer.failure(
                 InvalidSyntax(
                     self.token.position_start,
                     self.token.position_end,
-                    'pointer `->` excpected'
+                    'pointer `->` expected'
                 )
             )
         
@@ -166,17 +171,20 @@ class Parser:
 
             cases.append((condition, statements, True))
 
-            if self.token.type == TokenTypes.get('RBRACE'):
-                observer.register_next()
-                self.next()
+            if self.token.type != TokenTypes.get('RBRACE'):
+                return observer.failure(
+                    InvalidSyntax(
+                        self.token.position_start,
+                        self.token.position_end,
+                        '`}` expected'
+                    )
+                )
 
-            else:
-                all_cases = observer.register(self.elif_expression_others())
-                if observer.error: return observer
+            all_cases = observer.register(self.elif_expression_others())
+            if observer.error: return observer
 
-                new_cases, else_case = all_cases
-
-                cases.extend(new_cases)
+            new_cases, else_case = all_cases
+            cases.extend(new_cases)
 
         else:
             expression = observer.register(self.expression())
@@ -189,6 +197,9 @@ class Parser:
 
             new_cases, else_case = all_cases
             cases.extend(new_cases)
+
+        observer.register_next()
+        self.next()
 
         return observer.success((cases, else_case))
 
@@ -273,7 +284,7 @@ class Parser:
             body = observer.register(self.statements())
             if observer.error: return observer
 
-            if not self.token.type == TokenTypes.get('RBRACE'):
+            if self.token.type != TokenTypes.get('RBRACE'):
                 return observer.failure(
                     InvalidSyntax(
                         self.token.position_start,
@@ -460,9 +471,6 @@ class Parser:
             body = observer.register(self.statements())
             if observer.error: return observer
 
-            observer.register_next()
-            self.next()
-
             if self.token.type != TokenTypes.get('RBRACE'):
                 return observer.failure(
                     InvalidSyntax(
@@ -483,19 +491,20 @@ class Parser:
                 )
             )
         
-        body = observer.register(self.expression())
-        if observer.error: return observer
+        else:
+            body = observer.register(self.expression())
+            if observer.error: return observer
 
-        observer.register_next()
-        self.next()
+            observer.register_next()
+            self.next()
 
-        return observer.success(FunctionDefinitionNode(
-                function_name,
-                arguments_names,
-                body,
-                False
+            return observer.success(FunctionDefinitionNode(
+                    function_name,
+                    arguments_names,
+                    body,
+                    False
+                )
             )
-        )
     
     def list_expression(self):
         observer = Result()

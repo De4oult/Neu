@@ -19,6 +19,7 @@ table.set('clear',    BuiltInFunction.clear)
 table.set('typeof',   BuiltInFunction.typeof)
 table.set('append',   BuiltInFunction.append)
 table.set('pop',      BuiltInFunction.pop)
+table.set('wait',     BuiltInFunction.wait)
 
 def execute(filename: str, content: str) -> tuple[list[str], str]:
 
@@ -35,6 +36,8 @@ def execute(filename: str, content: str) -> tuple[list[str], str]:
     # AST Generation
     parser = Parser(tokens)
     ast    = parser.parse()
+
+    print(tokens)
 
     if ast.error: return None, ast.error
 

@@ -1,4 +1,5 @@
 from colorama import Fore, Style
+from core.arrows import arrows
 
 class Position:
     def __init__(self, index: int, line: int, column: int, filename: str, file_text: str) -> None:
@@ -35,7 +36,7 @@ class Error:
         self.info           = info
 
     def as_string(self):
-        return Fore.RED + f'{self.name} -> {self.info} \nFile `{self.position_start.filename}` on line {self.position_start.line + 1}\n' + Style.RESET_ALL # change it later
+        return Fore.RED + f'{self.name} -> {self.info} \nFile `{self.position_start.filename}` on line {self.position_start.line + 1}\n\n{arrows(self.position_start.file_text, self.position_start, self.position_end)}' + Style.RESET_ALL # change it later
     
 
 class UndefinedToken(Error):

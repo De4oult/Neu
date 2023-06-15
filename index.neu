@@ -1,1 +1,1 @@
-save a <- 10; if (a >= 5) -> displine("TRUE"); disp(a >= 5); }
+if (a == 5) -> {wait(1); displine(true);}; else -> {wait(1); displine("a == 7");}

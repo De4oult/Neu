@@ -72,7 +72,7 @@ class IfNode:
         self.else_case = else_case
 
         self.position_start = self.cases[0][0].position_start
-        self.position_end   = (self.else_case or self.cases[len(self.cases) - 1][0]).position_end
+        self.position_end   = (self.else_case or self.cases[len(self.cases) - 1])[0].position_end
 
 class ForNode:
     def __init__(self, variable_name, start_value, end_value, step_value, body, return_null) -> None:
