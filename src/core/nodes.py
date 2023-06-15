@@ -96,11 +96,11 @@ class LoopNode:
         self.position_end   = self.body.position_end 
 
 class FunctionDefinitionNode:
-    def __init__(self, variable_name, arguments_names, body, return_null) -> None:
+    def __init__(self, variable_name, arguments_names, body, auto_return) -> None:
         self.variable_name   = variable_name
         self.arguments_names = arguments_names
         self.body            = body
-        self.return_null     = return_null
+        self.auto_return     = auto_return
 
         if self.variable_name:
             self.position_start = self.variable_name.position_start
@@ -124,3 +124,20 @@ class CallNode:
             self.position_end = self.arguments_names[len(self.arguments_names) - 1].position_end
         else:
             self.position_end = self.node.position_end
+
+class ReturnNode:
+    def __init__(self, returnable_node, start, end) -> None:
+        self.returnable_node = returnable_node
+        
+        self.position_start = start
+        self.position_end   = end
+
+class ContinueNode:
+    def __init__(self, start, end) -> None:
+        self.position_start = start
+        self.position_end   = end
+
+class BreakNode:
+    def __init__(self, start, end) -> None:
+        self.position_start = start
+        self.position_end   = end

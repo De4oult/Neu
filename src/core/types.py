@@ -294,7 +294,7 @@ class BaseFunction(Value):
         observer = RuntimeResult()
 
         observer.register(self.check_arguments(arguments_names, arguments))
-        if observer.error: return observer
+        if observer.should_return(): return observer
 
         self.populate_arguments(arguments_names, arguments, context)
 
@@ -302,11 +302,11 @@ class BaseFunction(Value):
 
 
 class Function(BaseFunction):
-    def __init__(self, name, body, arguments_names, return_null) -> None:
+    def __init__(self, name, body, arguments_names, auto_return) -> None:
         super().__init__(name)
         self.body            = body
         self.arguments_names = arguments_names
-        self.return_null     = return_null
+        self.auto_return     = auto_return
 
     def execute(self, arguments, interpreter):
         observer = RuntimeResult()
@@ -314,15 +314,17 @@ class Function(BaseFunction):
         context = self.generate_context()
         
         observer.register(self.validate_arguments(self.arguments_names, arguments, context))
-        if observer.error: return observer
+        if observer.should_return(): return observer
 
         value = observer.register(interpreter.visit(self.body, context))
-        if observer.error: return observer
+        if observer.should_return() and observer.return_value == None: return observer
 
-        return observer.success(Number.null if self.return_null else value)
+        returnable_value = (value if self.auto_return else None) or observer.return_value or Number.null
+
+        return observer.success(returnable_value)
     
     def copy(self):
-        return Function(self.name, self.body, self.arguments_names, self.return_null).set_context(self.context).set_position(self.position_start, self.position_end)
+        return Function(self.name, self.body, self.arguments_names, self.auto_return).set_context(self.context).set_position(self.position_start, self.position_end)
     
     def type_of(self):
         return str(f'Function `{self.name}`')

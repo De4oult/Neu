@@ -170,8 +170,13 @@ class Interpreter:
             context.table.set(node.variable_name.value, Number(start_value.value))
             start_value.value += step_value.value
 
-            elements.append(observer.register(self.visit(node.body, context)))
-            if observer.error: return observer
+            value = observer.register(self.visit(node.body, context))
+            if observer.should_return() and observer.should_continue == False and observer.loop_break == False: return observer
+
+            if observer.loop_continue: continue
+            if observer.loop_break:    break
+    
+            elements.append(value)
 
         return observer.success(
             Number.null if node.return_null else
@@ -189,8 +194,13 @@ class Interpreter:
 
             if not condition.is_true(): break
 
-            elements.append(observer.register(self.visit(node.body, context)))
-            if observer.error: return observer
+            value = observer.register(self.visit(node.body, context))
+            if observer.should_return() and observer.should_continue == False and observer.loop_break == False: return observer
+
+            if observer.loop_continue: continue
+            if observer.loop_break:    break
+
+            elements.append(value)
 
         return observer.success(
             Number.null if node.return_null else
@@ -204,7 +214,7 @@ class Interpreter:
         body            = node.body
         arguments_names = [argument_name.value for argument_name in node.arguments_names]
 
-        function_value  = Function(function_name, body, arguments_names, node.return_null).set_context(context).set_position(node.position_start, node.position_end)
+        function_value  = Function(function_name, body, arguments_names, node.auto_return).set_context(context).set_position(node.position_start, node.position_end)
 
         if node.variable_name:
             context.table.set(function_name, function_value)
@@ -217,17 +227,35 @@ class Interpreter:
         arguments = []
 
         value = observer.register(self.visit(node.node, context))
-        if observer.error: return observer
+        if observer.should_return(): return observer
 
         value = value.copy().set_position(node.position_start, node.position_end)
 
         for argument in node.arguments_names:
             arguments.append(observer.register(self.visit(argument, context)))
-            if observer.error: return observer
+            if observer.should_return(): return observer
 
         return_value = observer.register(value.execute(arguments, Interpreter()))
-        if observer.error: return observer
+        if observer.should_return(): return observer
 
         return_value = return_value.copy().set_position(node.position_start, node.position_end).set_context(context)        
 
         return observer.success(return_value)
+    
+    def visit_ReturnNode(self, node, context):
+        observer = RuntimeResult()
+
+        if node.returnable_node:
+            value = observer.register(self.visit(node.returnable_node, context))
+            if observer.should_return(): return observer
+
+        else:
+            value = Number.null
+
+        return observer.success_return(value)    
+    
+    def visit_ContinueNode(self, node, context):
+        return RuntimeResult().success_continue()
+     
+    def visit_BreakNode(self, node, context):
+        return RuntimeResult().success_break()

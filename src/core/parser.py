@@ -116,7 +116,7 @@ class Parser:
                     )
                 
             else:
-                expression = observer.register(self.expression())
+                expression = observer.register(self.statement())
                 if observer.error: return observer
 
                 else_case = (expression, False)
@@ -181,7 +181,7 @@ class Parser:
             cases.extend(new_cases)
 
         else:
-            expression = observer.register(self.expression())
+            expression = observer.register(self.statement())
             if observer.error: return observer
 
             cases.append((condition, expression, False))
@@ -292,7 +292,7 @@ class Parser:
 
             return observer.success(ForNode(variable_name, start_value, end_value, step_value, body, True))
         
-        body = observer.register(self.expression())
+        body = observer.register(self.statement())
         if observer.error: return observer
 
         return observer.success(ForNode(variable_name, start_value, end_value, step_value, body, False))
@@ -348,7 +348,7 @@ class Parser:
 
             return observer.success(LoopNode(condition, body, True))
 
-        body = observer.register(self.expression())
+        body = observer.register(self.statement())
         if observer.error: return observer
 
         return observer.success(LoopNode(condition, body, False)) 
@@ -481,7 +481,7 @@ class Parser:
                     function_name,
                     arguments_names,
                     body,
-                    True
+                    False
                 )
             )
         
@@ -496,7 +496,7 @@ class Parser:
                     function_name,
                     arguments_names,
                     body,
-                    False
+                    True
                 )
             )
     
@@ -818,7 +818,7 @@ class Parser:
 
             if not more_statements: break
 
-            statement = observer.try_register(self.expression())
+            statement = observer.try_register(self.statement())
             if not statement: 
                 self.reverse(observer.reverse_count)
                 more_statements = False
@@ -835,6 +835,60 @@ class Parser:
             )
         )
 
+    def statement(self):
+        observer = Result()
+
+        start = self.token.position_start.copy()
+
+        if self.token.matches(TokenTypes.get('KEYWORD'), 'return'):
+            observer.register_next()
+            self.next()
+
+            expression = observer.try_register(self.expression())
+            if not expression:
+                self.reverse(observer.reverse_count)
+
+            return observer.success(
+                ReturnNode(
+                    expression,
+                    start,
+                    self.token.position_end.copy()
+                )
+            )
+        
+        if self.token.matches(TokenTypes.get('KEYWORD'), 'continue'):
+            observer.register_next()
+            self.next()
+
+            return observer.success(
+                ContinueNode(
+                    start,
+                    self.token.position_end
+                )
+            )
+        
+        if self.token.matches(TokenTypes.get('KEYWORD'), 'break'):
+            observer.register_next()
+            self.next()
+
+            return observer.success(
+                BreakNode(
+                    start,
+                    self.token.position_end
+                )
+            )
+
+        expression = observer.register(self.expression())
+        if observer.error:
+            return observer.failure(
+                InvalidSyntax(
+                    self.token.position_start,
+                    self.token.position_end,
+                    'keyword or expression expected'
+                )
+            )
+        
+        return observer.success(expression)
 
     def expression(self):
         observer = Result()

@@ -45,6 +45,8 @@ KeywordTokens = [
     'loop',
     'to',
     'break',
+    'continue',
+    'return',
     'func'
 ]
 
