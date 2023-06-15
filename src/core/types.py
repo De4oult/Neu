@@ -189,6 +189,9 @@ class Number(Value):
     def is_true(self):
         return self.value != 0
 
+    def type_of(self) -> str:
+        return str(f'Number `{self.value}`')
+
     def __repr__(self) -> str:
         return str(self.value)
     
@@ -214,6 +217,9 @@ class String(Value):
     
     def copy(self):
         return String(self.value).set_position(self.position_start, self.position_end).set_context(self.context)
+    
+    def type_of(self) -> str:
+        return str(f'String `{self.value}`')
     
     def __repr__(self) -> str:
         return f'"{self.value}"'
@@ -243,6 +249,9 @@ class List(Value):
 
     def copy(self):
         return List(self.elements).set_position(self.position_start, self.position_end).set_context(self.context)
+    
+    def type_of(self):
+        return str(f'Array `{self.elements}`')
     
     def __repr__(self) -> str:
         return f'[{", ".join([str(element) for element in self.elements])}]'
@@ -315,6 +324,9 @@ class Function(BaseFunction):
     def copy(self):
         return Function(self.name, self.body, self.arguments_names, self.return_null).set_context(self.context).set_position(self.position_start, self.position_end)
     
+    def type_of(self):
+        return str(f'Function `{self.name}`')
+    
     def __repr__(self) -> str:
         return f'<function {self.name}>'
     
@@ -343,9 +355,13 @@ class BuiltInFunction(BaseFunction):
     def copy(self):
         return BuiltInFunction(self.name).set_context(self.context).set_position(self.position_start, self.position_end)
     
+    def type_of(self):
+        return str(f'Function `{self.name}`')
+
     def __repr__(self) -> str:
         return f'<built-in function {self.name}>'
     
+
     def execute_disp(self, context):
         print(str(context.table.get('value')), end = '')
         
@@ -374,7 +390,7 @@ class BuiltInFunction(BaseFunction):
     execute_clear.arguments_names = []
 
     def execute_typeof(self, context):
-        return RuntimeResult().success(String(type(context.table.get('value'))))
+        return RuntimeResult().success(String(context.table.get('value').type_of()))
     
     execute_typeof.arguments_names = ['value']
 
