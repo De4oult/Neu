@@ -20,6 +20,7 @@ table.set('typeof',   BuiltInFunction.typeof)
 table.set('append',   BuiltInFunction.append)
 table.set('pop',      BuiltInFunction.pop)
 table.set('wait',     BuiltInFunction.wait)
+table.set('length',   BuiltInFunction.length)
 
 def execute(filename: str, content: str) -> tuple[list[str], str]:
 

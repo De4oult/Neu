@@ -456,6 +456,15 @@ class BuiltInFunction(BaseFunction):
 
     execute_pop.arguments_names = ['list', 'index']
 
+    def execute_length(self, context):
+        value = context.table.get('value')
+
+        if isinstance(value, List):   return RuntimeResult().success(Number(len(value.elements)))
+        if isinstance(value, Number): return RuntimeResult().success(Number(len(str(value))))
+        if isinstance(value, String): return RuntimeResult().success(Number(len(str(value))))
+
+    execute_length.arguments_names = ['value']
+
     def execute_wait(self, context):
         value = context.table.get('value')
 
@@ -465,11 +474,12 @@ class BuiltInFunction(BaseFunction):
 
     execute_wait.arguments_names = ['value']
 
-BuiltInFunction.disp     = BuiltInFunction("disp")
-BuiltInFunction.displine = BuiltInFunction("displine")
-BuiltInFunction.read     = BuiltInFunction("read")
-BuiltInFunction.clear    = BuiltInFunction("clear")
-BuiltInFunction.typeof   = BuiltInFunction("typeof")
-BuiltInFunction.append   = BuiltInFunction("append")
-BuiltInFunction.pop      = BuiltInFunction("pop")
-BuiltInFunction.wait     = BuiltInFunction("wait")
+BuiltInFunction.disp     = BuiltInFunction('disp')
+BuiltInFunction.displine = BuiltInFunction('displine')
+BuiltInFunction.read     = BuiltInFunction('read')
+BuiltInFunction.clear    = BuiltInFunction('clear')
+BuiltInFunction.typeof   = BuiltInFunction('typeof')
+BuiltInFunction.append   = BuiltInFunction('append')
+BuiltInFunction.pop      = BuiltInFunction('pop')
+BuiltInFunction.wait     = BuiltInFunction('wait')
+BuiltInFunction.length   = BuiltInFunction('length')
