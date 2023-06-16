@@ -17,3 +17,4 @@ IDEAS:
             displine(System.info())
         } 
     )
+    PYTHON SUPPORT
