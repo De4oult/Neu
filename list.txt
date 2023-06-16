@@ -1,0 +1,19 @@
+NEED TO FIX: 
+    MULTILINE statements
+
+IDEAS:
+    DEFINE
+    USE
+    EXECUTE
+    UNION (
+        for example, 
+        {
+            union System -> {
+                func info() -> {
+                    return system_name() + " " + system_ver()
+                }
+            }
+
+            displine(System.info())
+        } 
+    )
