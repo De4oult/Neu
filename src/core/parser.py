@@ -910,12 +910,12 @@ class Parser:
             observer.register_next()
             self.next()
 
-            if self.token.type != TokenTypes.get('LPOINTER'):  # maybe change it later
+            if self.token.type != TokenTypes.get('EQ'):  # maybe change it later
                 return observer.failure(
                     InvalidSyntax(
                         self.token.position_start, 
                         self.token.position_end,
-                        'pointer `<-` expected'
+                        '`=` expected'
                     )
                 )
             
