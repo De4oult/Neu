@@ -33,6 +33,9 @@ class Lexer:
                 tokens.append(Token('NEWLINE', start = self.pos))
                 self.next()
 
+            elif self.char == '/':
+                self.make_comment()
+
             # PARSE OPERATORS
             elif self.char == '"':
                 tokens.append(self.make_string())
@@ -265,6 +268,25 @@ class Lexer:
             token_type = 'INC'
 
         return Token(token_type, start = start, end = self.pos)
+
+    def make_comment(self):
+        self.next()
+
+        if self.char == '/':
+            while self.char != '\n':
+                self.next()
+
+        elif self.char == '*':
+            while True:
+                if self.char == '*':
+                    self.next()
+
+                    if self.char == '/':
+                        break
+
+                self.next()
+
+        self.next()
 
     # BOOLEANS
 
