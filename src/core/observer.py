@@ -11,7 +11,7 @@ class Result:
         self.next_count += 1
 
     def register(self, result):
-        self.last_next   = self.next_count
+        self.last_next   = result.next_count
         self.next_count += result.next_count
         
         if result.error: self.error = result.error
@@ -27,11 +27,13 @@ class Result:
 
     def success(self, node):
         self.node = node
+
         return self
 
     def failure(self, error):
         if not self.error or self.next_count == 0:
             self.error = error
+            
         return self
     
 
@@ -47,7 +49,7 @@ class RuntimeResult:
         self.loop_break    = False
 
     def register(self, result):
-        if result.error: self.error = result.error
+        self.error         = result.error
         self.return_value  = result.return_value
         self.loop_continue = result.loop_continue
         self.loop_break    = result.loop_break
