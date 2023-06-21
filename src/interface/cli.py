@@ -1,4 +1,5 @@
 from modules.translator import translate
+from modules.runner     import execute
 from interface.editor   import editor
 
 from docopt import docopt
@@ -17,7 +18,11 @@ def run(args: list[str]) -> None:
 
 
     if args.get('<file_name>'):
-        pass # execute Neu-file
+        with open(args.get('<file_name>'), 'r') as file:
+            script = file.readlines()
+
+            for string in script:
+                execute(args.get('<file_name>'), string)
 
     else:
         editor()
